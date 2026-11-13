@@ -1,0 +1,112 @@
+# SARsight: 4D Surface Dynamics & Intelligence Platform
+
+## 1. System Architecture Overview
+
+**SARsight** is a dual-interface 4D geospatial platform that pairs an Action & Impact Dashboard with an interactive 3D Digital Globe. The platform ingests NASA-ISRO SAR (NISAR) Level-2 geocoded products to translate complex microwave signals into actionable intelligence for global sectors and emergency responders.
+
+Leveraging the SweepSAR technique (>240 km imaging swath) and a 12-day exact repeat orbit, SARsight continuously monitors Earth's land and ice-covered surfaces.
+
+```
+                                  +-------------------------------------------------------------+
+                                  |                     NISAR DATA SOURCES                      |
+                                  |   • L-band (24 cm) & S-band (12 cm) Products                |
+                                  |   • Distributed via Alaska Satellite Facility (ASF) DAAC    |
+                                  |   • Format: HDF-EOS5 Granules (L2-GUNW, L2-GCOV)            |
+                                  +------------------------------+------------------------------+
+                                                                 |
+                                                                 ▼
+                                  +-------------------------------------------------------------+
+                                  |                   BACKEND DATA PIPELINE                     |
+                                  |   • GDAL / NetCDF translation of HDF-EOS5 layers            | 
+                                  |   • Cloud-Optimized GeoTIFF (COG) generation                |
+                                  |   • FastAPI microservices & Dynamic Tile Server             |
+                                  +------------------------------+------------------------------+
+                                                                 |
+                                                                 ▼
+                                  +-------------------------------------------------------------+
+                                  |             GEOSPATIAL ON-DEMAND ENGINE (AOI)               |
+                                  |   • InSAR Time Series: GIAnT (Generic InSAR Analysis Tool)  |
+                                  |   • Atmos. Correction: PyAPS (ECMWF Weather Models)         |
+                                  |   • Zonal Stats: Rasterio & Shapely Polygon Masking         |
+                                  +------------------------------+------------------------------+
+                                                                 |
+                                         +-----------------------+-----------------------+
+                                         |                                               |
+                                         ▼                                               ▼
++------------------------------------------------------------------+   +---------------------------------------------------+
+|                        FRONTEND CLIENT                           |   |               AOI REPORT GENERATOR                |
+|  • EconAssist: Agriculture, Maritime, Oil & Gas, Mining          |   |  • User draws GeoJSON polygon on map/globe        |
+|  • HazAssist: Solid Earth, Floods, Damage Proxy Maps (DPMs)      |   |  • Real-time zonal statistics extraction          |
+|  • VisAssist: Interactive 3D Globe with 12-day Orbit Scrubber    |   |  • Plain-language hazard & economic impact briefs |
++------------------------------------------------------------------+   +---------------------------------------------------+
+
+
+```
+
+## 2. Core Frontend Modules
+
+### 2.1 EconAssist (Global Livelihood & Economic Optimization)
+
+The interface automatically detects user coordinates or accepts pinned locations, rendering plain-language metrics tailored to local primary industries:
+
+* **Agriculture & Farming:** Utilizes L-band and S-band observations to estimate crop biomass and classify active crop fields. By calculating the Coefficient of Variation ($CV_{pq}$) of polarimetric backscatter ($\sigma^0$) over the growing season, the module provides alerts for crop phenology stages, soil moisture tracking (via dielectric permittivity), and optimal harvest windows.
+
+* **Fisheries & Coastal Marine:** Employs radar sensitivity to ocean surface roughness to map local sea-surface texture, wind speed boundaries, and coastal dynamics.
+
+* **Offshore Energy & Petrochemicals:** Identifies oceanic oil slicks by capitalizing on the high target-to-background contrast at L-band; oil dampens capillary waves, causing specular reflection that reduces backscatter energy. It also monitors land subsidence associated with onshore underground fluid extraction.
+
+* **Mining & Heavy Industry:** Visualizes surface elevation changes to track the stability of open-pit walls, mine collapses, and sinkholes, providing critical safety data.
+
+### 2.2 HazAssist (Public Safety, Hazard Risk & Disaster Response)
+
+Translates interferometric and polarimetric radar data into low-latency emergency response insights:
+
+* **Structural Damage Proxy Maps (DPMs):** Identifies urban destruction following natural disasters by calculating interferometric coherency ($\gamma$) changes. Intact structures maintain high phase correlation, whereas collapsed infrastructure causes severe decorrelation.
+
+* **All-Weather Hydrologic Inundation:** Bypasses cloud cover to map flood perimeters. It identifies open water through specular reflection (signal drop) and detects submerged forests using enhanced double-bounce backscatter in the HH channel.
+
+* **Deformation Tracking:** Unwraps interferometric phase differences ($\Delta\phi$) to map surface fault ruptures, volcanic inflation, and groundwater-driven aquifer subsidence.
+
+### 2.3 VisAssist(The 4D Global Sandbox)
+
+An interactive 3D digital globe rendering Earth's dynamic processes over time:
+
+* **12-Day Orbital Revisit Scrubber:** An animated temporal slider that steps through acquisitions matching NISAR's exact 12-day repeat orbit cycle.
+
+* **Layer Composition:** Toggles between standard basemaps and calibrated SAR layers, illustrating dual-frequency L-band penetration (through foliage) and S-band sensitivity (to light vegetation).
+
+* **Topographic Profiles:** Generates interactive cross-sectional transects across faults, active landslides, and subsiding aquifer basins.
+
+## 3. Geospatial On-Demand Engine & AOI Polygon Inspector
+
+Users can draw an Area of Interest (AOI) polygon anywhere on the globe to trigger on-demand zonal analyses:
+
+```
+[User Draws Polygon] ➔ [POST /api/aoi/evaluate] ➔ [Extract & Clip GUNW/GCOV COGs] ➔ [Synthesize Output Payload]
+
+
+```
+
+* **Deformation & Subsidence:** Quantifies ground movement rates in cm/year using unwrapped phase ($\Delta r = \frac{\lambda}{4\pi}\Delta\phi$) and pinpoints maximum displacement coordinates.
+
+* **Infrastructure Safety Index:** Reports the percentage of built structures exhibiting severe coherence decay, highlighting localized collapse hazards.
+
+* **Surface Water Coverage:** Displays total area of detected standing water alongside submerged vegetation footprints.
+
+## 4. Technical Implementation Stack
+
+* **Data Ingestion:** Retrieves NISAR L2-GUNW (Geocoded Nearest-Time Unwrapped Interferogram) and L2-GCOV (Geocoded Polarimetric Covariance Matrix) HDF-EOS5 products from the ASF DAAC.
+
+* **Backend & Processing (Python):**
+
+  * `FastAPI` for serving API routes.
+
+  * `Rasterio` & `Shapely` for executing polygon clipping on Cloud-Optimized GeoTIFFs via HTTP Range Requests.
+
+  * `GIAnT` (Generic InSAR Analysis Toolbox) methodologies for time-series extraction.
+
+  * `PyAPS` for applying atmospheric/weather model corrections (e.g., ECMWF).
+
+* **Map & Globe Engine:** `Deck.gl` or `Mapbox GL JS` for rendering the 3D globe, managing raster overlay tiles, and integrating polygon drawing tools.
+
+* **Frontend UI:** `React`, `Tailwind CSS`, and `Recharts` for displaying simplified status indicators, the orbit time-slider, time-series graphs, and interactive report panels.

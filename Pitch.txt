@@ -1,0 +1,51 @@
+NASA Space Apps Challenge Pitch: SARsight
+Team Name: Team []
+Challenge: Dancing with the SARs 
+Target Duration: ~2 min 40 s
+
+[0:00 - 0:15] THE HOOK [Visual: Fast-paced montage of natural events — a flooded farm, a cracked road after an earthquake, a time-lapse of a glacier. Text on screen: "Earth is constantly moving."]
+
+[Arshia]: From slow-sinking cities to sudden earthquakes, Earth's surface is in a constant, endless waltz of change. But for those living on the front lines of these changes, this dance is invisible—until disaster strikes.
+
+[0:15 - 0:35] THE PROBLEM & CHALLENGE [Visual: Speaker + Satellite looking at clouds, unable to see the ground. Cuts to complex, colorful, but confusing radar interferograms.]
+
+[Abrar]: Traditional optical satellites are blinded by clouds, weather, and darkness. And while NASA's upcoming NISAR mission will use radar to see through the clouds and track ground movement down to the centimeter, raw radar data is incredibly complex. For a local farmer or an emergency responder, looking at a microwave phase shift isn't helpful. [Text on screen: Challenge: Dancing with the SARs]
+
+[Bikram]: That’s exactly the problem presented in the NASA challenge: "Dancing with the SARs." How do we visualize and communicate these complex surface changes to the world?
+
+[0:35 - 0:45] TEAM INTRO [Visual: Split-screen grid of the 5 members.]
+[Bikram]: We are Team [].
+[Raisa]: I'm [Name]. 
+[Rakin]: I'm [Name]. 
+[Arshia]: I'm [Name]. 
+[Abrar]: I'm [Name]. 
+[Bikram]: And I'm [Name].
+
+[0:45 - 0:60] THE SOLUTION CONCEPT [Visual: Screen recording or animation of the SARsight Dashboard, spinning the 3D globe.]
+
+[Rakin]: To solve this, we’ll build SARsight: A 4D Surface Dynamics Dashboard. SARsight is a platform that ingests raw NISAR data—like unwrapped phase and polarimetric backscatter—and translates that physics into plain-language, actionable insights. We’ll turn the complex "dance of the SARs" into three intuitive modules.
+
+[1:00 - 1:25] ECONASSIST [Visual: UI mockup or graphical representation of "EconAssist" showing a farm plot with a green "Optimal Moisture" badge and crop growth timeline. Icons of a ship and oil rig pop up briefly.]
+
+[Raisa]: First is EconAssist. We use L-band and S-band radar to penetrate crop canopies. But instead of showing farmers a scatter plot, we show them simple icons. A farmer can check their plot and instantly see if their soil moisture is optimal, or if their crop growth has stalled, regardless of monsoon clouds overhead. It also scales to marine and mining industries, tracking oil slicks and open-pit stability.
+
+[1:25 - 1:50] HAZASSIST & POLYGON TOOL [Visual: Screen recording of a user drawing a polygon over a city map. A report card slides in showing "18% Coherence Loss - High Collapse Risk".]
+
+[Arshia]: Second is HazAssist, built for public safety. Using interferometric coherence loss, our app generates damage proxy maps after an earthquake, highlighting damaged infrastructure in red. Users can even draw a polygon anywhere on the map to get an instant, automated risk report detailing flood boundaries or land sinking velocity in centimeters per year.
+
+[1:50 - 2:15] VisAssist 3D GLOBE [Visual: Full screen of the interactive 3D globe. The mouse drags a "12-day" time slider, and the map colors shift.]
+
+[Bikram]: Finally, the VisAssist Sandbox. This is where you can truly watch the Earth dance. We’ll build an interactive 3D globe with a 12-day orbital time scrubber. Users can drag the slider to watch tectonic strain accumulate over months, or watch seasonal wetlands flood and drain in real-time.
+
+[2:15 - 2:27] CONCLUSION [Visual: Fade back to the team members. Text on screen: "SARsight: Actionable Intelligence for Everyone."]
+
+[Abrar]: SARsight doesn't just display data; it democratizes it. We handle the complex radiometric and geometric pipeline on the backend...
+
+[Raisa]: ...so that low-literacy farmers, local governments, and global rescue teams can make life-saving decisions on the frontend.
+
+[2:27 - 2:40] OUTRO [Visual: Team waving or looking confident. Logo of SARsight and NASA Space Apps Challenge appears.]
+
+[Grid of everyone]: We are Team [].
+[Rakin]: And this is SARsight.
+
+[Fade to Black]

@@ -1,0 +1,18 @@
+{
+  "grid": 96,
+  "epochs": 30,
+  "regions": [
+    { "id": "rajshahi-barind", "name": "Barind Farmland", "place": "Rajshahi", "country": "Bangladesh", "scenario": "agriculture", "modules": ["econ", "vis"], "center": [88.45, 24.55], "span": 0.12, "window": "latest" },
+    { "id": "bay-of-bengal", "name": "Chattogram Coast", "place": "Bay of Bengal", "country": "Bangladesh", "scenario": "marine", "modules": ["econ", "vis"], "center": [91.75, 22.2], "span": 0.4, "window": "latest" },
+    { "id": "barapukuria", "name": "Barapukuria Coal Mine", "place": "Dinajpur", "country": "Bangladesh", "scenario": "mine", "modules": ["econ", "vis"], "center": [88.96, 25.55], "span": 0.06, "window": ["2023-05-01", "2024-07-21"], "licsar": "012A_06441_131313" },
+    { "id": "bingham-canyon", "name": "Bingham Canyon Pit", "place": "Utah", "country": "USA", "scenario": "mine", "variant": "pit", "modules": ["econ", "vis"], "center": [-112.15, 40.523], "span": 0.05, "window": "latest" },
+    { "id": "lost-hills", "name": "Lost Hills Oil Field", "place": "California", "country": "USA", "scenario": "extraction", "modules": ["econ", "vis"], "center": [-119.72, 35.62], "span": 0.14, "window": ["2024-12-01", "2026-02-14"], "licsar": "137A_05534_131822" },
+    { "id": "sylhet-haor", "name": "Sunamganj Haor Floods", "place": "Sylhet", "country": "Bangladesh", "scenario": "flood", "modules": ["haz", "vis"], "center": [91.4, 25.05], "span": 0.4, "window": ["2022-03-01", "2023-04-15"] },
+    { "id": "dhaka", "name": "Dhaka Subsidence", "place": "Dhaka", "country": "Bangladesh", "scenario": "subsidence", "modules": ["haz", "vis"], "center": [90.4, 23.78], "span": 0.2, "window": ["2024-09-01", "2025-11-22"], "licsar": "150D_06725_151616" },
+    { "id": "rangamati", "name": "Hill Tract Slopes", "place": "Rangamati", "country": "Bangladesh", "scenario": "landslide", "modules": ["haz", "vis"], "center": [92.17, 22.65], "span": 0.08, "window": ["2024-02-01", "2025-04-15"], "licsar": "077D_06682_131313" },
+    { "id": "kahramanmaras", "name": "Kahramanmaraş Earthquake", "place": "Kahramanmaraş", "country": "Türkiye", "scenario": "earthquake", "modules": ["haz", "vis"], "center": [36.92, 37.575], "span": 0.3, "window": ["2022-09-01", "2023-10-31"], "event": {"date": "2023-02-06", "label": "Mw 7.8 earthquake"}, "licsar": "021D_05266_252525" },
+    { "id": "campi-flegrei", "name": "Campi Flegrei Caldera", "place": "Pozzuoli", "country": "Italy", "scenario": "volcano", "modules": ["haz", "vis"], "center": [14.14, 40.83], "span": 0.12, "window": ["2025-08-15", "2026-10-24"], "licsar": "044A_04913_071213" },
+    { "id": "mexico-city", "name": "Mexico City Subsidence", "place": "Mexico City", "country": "Mexico", "scenario": "subsidence", "modules": ["haz", "vis"], "center": [-99.07, 19.4], "span": 0.4, "window": ["2025-07-15", "2026-09-13"], "licsar": "143D_07132_131313" },
+    { "id": "sindh", "name": "Manchar Lake Floods", "place": "Sindh", "country": "Pakistan", "scenario": "flood", "modules": ["haz", "vis"], "center": [67.68, 26.42], "span": 0.8, "window": ["2022-05-01", "2023-06-15"] }
+  ]
+}

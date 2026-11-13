@@ -1,0 +1,14 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+numpy>=1.26
+shapely>=2.0
+requests>=2.31
+# Real-data fetch (scripts/fetch_real_data.py)
+pystac-client>=0.8
+planetary-computer>=1.0
+rasterio>=1.3
+# Real-data path (optional; the service runs in simulation mode without these)
+h5py>=3.10          # read NISAR HDF5 (GUNW / GCOV)
+earthaccess>=0.9    # NISAR science streaming (needs your Earthdata login in ~/.netrc or env vars)
+edge-tts>=7.0.0     # Neural text-to-speech for plain-language voice advice (EN / BN)
+# pyaps3>=0.3       # ECMWF/ERA5 tropospheric correction (needs CDS API key)

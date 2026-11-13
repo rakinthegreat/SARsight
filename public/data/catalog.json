@@ -1,0 +1,337 @@
+{
+ "version": 2,
+ "regions": [
+  {
+   "id": "rajshahi-barind",
+   "name": "Barind Farmland",
+   "place": "Rajshahi",
+   "country": "Bangladesh",
+   "scenario": "agriculture",
+   "modules": [
+    "econ",
+    "vis"
+   ],
+   "center": [
+    88.45,
+    24.55
+   ],
+   "bbox": [
+    88.38404,
+    24.49,
+    88.51596,
+    24.61
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "bay-of-bengal",
+   "name": "Chattogram Coast",
+   "place": "Bay of Bengal",
+   "country": "Bangladesh",
+   "scenario": "marine",
+   "modules": [
+    "econ",
+    "vis"
+   ],
+   "center": [
+    91.75,
+    22.2
+   ],
+   "bbox": [
+    91.53399,
+    22,
+    91.96601,
+    22.4
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "barapukuria",
+   "name": "Barapukuria Coal Mine",
+   "place": "Dinajpur",
+   "country": "Bangladesh",
+   "scenario": "mine",
+   "modules": [
+    "econ",
+    "vis"
+   ],
+   "center": [
+    88.96,
+    25.55
+   ],
+   "bbox": [
+    88.92675,
+    25.52,
+    88.99325,
+    25.58
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "bingham-canyon",
+   "name": "Bingham Canyon Pit",
+   "place": "Utah",
+   "country": "USA",
+   "scenario": "mine",
+   "modules": [
+    "econ",
+    "vis"
+   ],
+   "center": [
+    -112.15,
+    40.523
+   ],
+   "bbox": [
+    -112.18289,
+    40.498,
+    -112.11711,
+    40.548
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "lost-hills",
+   "name": "Lost Hills Oil Field",
+   "place": "California",
+   "country": "USA",
+   "scenario": "extraction",
+   "modules": [
+    "econ",
+    "vis"
+   ],
+   "center": [
+    -119.72,
+    35.62
+   ],
+   "bbox": [
+    -119.80611,
+    35.55,
+    -119.63389,
+    35.69
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "sylhet-haor",
+   "name": "Sunamganj Haor Floods",
+   "place": "Sylhet",
+   "country": "Bangladesh",
+   "scenario": "flood",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    91.4,
+    25.05
+   ],
+   "bbox": [
+    91.17923,
+    24.85,
+    91.62077,
+    25.25
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "dhaka",
+   "name": "Dhaka Subsidence",
+   "place": "Dhaka",
+   "country": "Bangladesh",
+   "scenario": "subsidence",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    90.4,
+    23.78
+   ],
+   "bbox": [
+    90.29072,
+    23.68,
+    90.50928,
+    23.88
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "rangamati",
+   "name": "Hill Tract Slopes",
+   "place": "Rangamati",
+   "country": "Bangladesh",
+   "scenario": "landslide",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    92.17,
+    22.65
+   ],
+   "bbox": [
+    92.12666,
+    22.61,
+    92.21334,
+    22.69
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "kahramanmaras",
+   "name": "Kahramanmaraş Earthquake",
+   "place": "Kahramanmaraş",
+   "country": "Türkiye",
+   "scenario": "earthquake",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    36.92,
+    37.575
+   ],
+   "bbox": [
+    36.73074,
+    37.425,
+    37.10926,
+    37.725
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "campi-flegrei",
+   "name": "Campi Flegrei Caldera",
+   "place": "Pozzuoli",
+   "country": "Italy",
+   "scenario": "volcano",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    14.14,
+    40.83
+   ],
+   "bbox": [
+    14.0607,
+    40.77,
+    14.2193,
+    40.89
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "mexico-city",
+   "name": "Mexico City Subsidence",
+   "place": "Mexico City",
+   "country": "Mexico",
+   "scenario": "subsidence",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    -99.07,
+    19.4
+   ],
+   "bbox": [
+    -99.28204,
+    19.2,
+    -98.85796,
+    19.6
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  },
+  {
+   "id": "sindh",
+   "name": "Manchar Lake Floods",
+   "place": "Sindh",
+   "country": "Pakistan",
+   "scenario": "flood",
+   "modules": [
+    "haz",
+    "vis"
+   ],
+   "center": [
+    67.68,
+    26.42
+   ],
+   "bbox": [
+    67.23335,
+    26.02,
+    68.12665,
+    26.82
+   ],
+   "observed": true,
+   "nisarPasses": 24
+  }
+ ],
+ "sources": {
+  "s1": {
+   "name": "Sentinel-1 RTC",
+   "by": "ESA Copernicus · Catalyst · Microsoft Planetary Computer",
+   "license": "Copernicus open data",
+   "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"
+  },
+  "palsar": {
+   "name": "ALOS-2 PALSAR-2 mosaic 2021",
+   "by": "JAXA · Microsoft Planetary Computer",
+   "license": "JAXA open data",
+   "url": "https://planetarycomputer.microsoft.com/dataset/alos-palsar-mosaic"
+  },
+  "dem": {
+   "name": "Copernicus DEM GLO-30",
+   "by": "ESA · Microsoft Planetary Computer",
+   "license": "Copernicus DEM licence",
+   "url": "https://planetarycomputer.microsoft.com/dataset/cop-dem-glo-30"
+  },
+  "worldcover": {
+   "name": "ESA WorldCover 2021",
+   "by": "ESA · Microsoft Planetary Computer",
+   "license": "CC BY 4.0",
+   "url": "https://planetarycomputer.microsoft.com/dataset/esa-worldcover"
+  },
+  "gsw": {
+   "name": "JRC Global Surface Water",
+   "by": "EC JRC / Google · Microsoft Planetary Computer",
+   "license": "Copernicus / CC BY 4.0",
+   "url": "https://planetarycomputer.microsoft.com/dataset/jrc-gsw"
+  },
+  "power": {
+   "name": "NASA POWER (MERRA-2 / IMERG)",
+   "by": "NASA Langley Research Center",
+   "license": "Public domain",
+   "url": "https://power.larc.nasa.gov"
+  },
+  "usgs": {
+   "name": "USGS earthquake catalogue",
+   "by": "U.S. Geological Survey",
+   "license": "Public domain",
+   "url": "https://earthquake.usgs.gov"
+  },
+  "asf": {
+   "name": "NISAR (GUNW / GCOV) and pass catalogue",
+   "by": "NASA-ISRO · ASF DAAC",
+   "license": "Public",
+   "url": "https://search.asf.alaska.edu"
+  },
+  "licsar": {
+   "name": "Sentinel-1 interferograms (LiCSAR)",
+   "by": "COMET, University of Leeds · ESA Copernicus · JASMIN/CEDA",
+   "license": "CC BY 4.0",
+   "url": "https://comet.nerc.ac.uk/COMET-LiCS-portal/"
+  }
+ }
+}
