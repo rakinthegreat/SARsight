@@ -9,11 +9,13 @@ import { Orbit, Radar } from "./Onboarding";
 
 const STEPS = ["hello", "three", "nisar", "try", "any"] as const;
 
-export default function JudgeTour({ lang, setLang, catalog, onPick, onClose }: {
+export default function JudgeTour({ lang, setLang, catalog, onPick, onClose, startAtPlaces = false }: {
   lang: Lang; setLang: (l: Lang) => void; catalog: CatalogEntry[]; onPick: (id: string) => void; onClose: () => void;
+  /** open straight at the list of ready places */
+  startAtPlaces?: boolean;
 }) {
   const L = (s: [string, string]) => tr(s, lang);
-  const [i, setI] = useState(0), [dir, setDir] = useState(1);
+  const [i, setI] = useState(startAtPlaces ? STEPS.indexOf("try") : 0), [dir, setDir] = useState(1);
   const go = (k: number) => { setDir(k > i ? 1 : -1); setI(Math.max(0, Math.min(STEPS.length - 1, k))); };
   const step = STEPS[i], last = i === STEPS.length - 1;
   const ready = catalog.filter((c) => !c.custom).sort((a, b) => Number(!!b.nisarData) - Number(!!a.nisarData));

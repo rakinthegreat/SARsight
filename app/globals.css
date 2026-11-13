@@ -835,7 +835,10 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 /* ---------- judges' tour (reuses the onboarding stage) ---------- */
 .judge-btn { border-color: var(--accent); color: var(--accent); }
 .judge-btn .pill-icon { color: var(--accent); }
-.judge-invite { color: var(--accent); margin: 0; }
+.judge-quick { display: grid; gap: 8px; width: 100%; max-width: 360px; padding: 14px 16px; border: 1px solid #ffb54766; border-radius: var(--r); background: #ffb5470d; text-align: left; }
+.judge-quick b { color: var(--accent); font-size: 16px; }
+.judge-quick > span { color: var(--dim); font-size: 15px; line-height: 1.4; }
+.judge-quick .action { font-size: 15px; }
 .judge-mods { display: grid; gap: 10px; width: 100%; max-width: 480px; text-align: left; }
 .judge-mod { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r); background: #ffffff08; animation: rise .5s cubic-bezier(.2,.8,.2,1) backwards; }
 .judge-mod svg { flex: none; color: var(--accent); margin-top: 2px; }

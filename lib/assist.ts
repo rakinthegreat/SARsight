@@ -431,6 +431,9 @@ export function prepProgress(stage: string | undefined, position: number | undef
 export const JUDGE = {
   button: ["For judges", "বিচারকদের জন্য"],
   invite: ["Judging? Take the 1-minute tour", "বিচারক? ১ মিনিটের পরিচিতি দেখুন"],
+  quickTitle: ["Judging, or short on time?", "বিচারক, নাকি সময় কম?"],
+  quickBody: ["{n} ready places open instantly. A new place needs a minute or two to download its satellite data.", "{n}টি তৈরি জায়গা সঙ্গে সঙ্গে খোলে। নতুন জায়গার স্যাটেলাইট তথ্য নামাতে এক-দুই মিনিট লাগে।"],
+  tour: ["1-minute tour", "১ মিনিটের পরিচিতি"],
   eyebrow: ["NASA Space Apps 2026 · Dancing with the SARs", "নাসা স্পেস অ্যাপস ২০২৬ · ড্যান্সিং উইথ দ্য SARs"],
   hello: ["Welcome, judges", "স্বাগতম, বিচারকগণ"],
   helloSub: ["SARsight turns NASA-ISRO NISAR radar into plain answers that farmers, fishers and families can act on, plus a full research globe for experts.", "SARsight নাসা-ইসরোর নিসার রাডারকে সহজ উত্তরে বদলায়, যা কৃষক, জেলে ও পরিবার কাজে লাগাতে পারে; আর বিশেষজ্ঞদের জন্য আছে পূর্ণ গবেষণা গ্লোব।"],

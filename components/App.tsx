@@ -135,9 +135,9 @@ function AppContent() {
   const [showSources, setShowSources] = useState(false);
   const pending = useRef<LonLat[] | null>(null);
   const [onboard, setOnboard] = useState(false);
-  const [judge, setJudge] = useState(false);
-  useEffect(() => { if (/[?&#]judge\b/.test(location.search + location.hash)) { setJudge(true); try { localStorage.setItem(ONBOARDED, "1"); } catch { /* storage unavailable */ } } }, []);
-  const openJudge = () => { setOnboard(false); setJudge(true); };
+  const [judge, setJudge] = useState<false | "tour" | "ready">(false);
+  useEffect(() => { if (/[?&#]judge\b/.test(location.search + location.hash)) { setJudge("tour"); try { localStorage.setItem(ONBOARDED, "1"); } catch { /* storage unavailable */ } } }, []);
+  const openJudge = (ready?: boolean) => { setOnboard(false); setJudge(ready ? "ready" : "tour"); };
   const judgePick = (id: string) => { setJudge(false); setSiteId(null); setAdding(false); setModule("vis"); setSelected(id); };
   const onbFrom = useRef<{ ll: LonLat; pool: CatalogEntry[] } | null>(null);
   const [onbFallback, setOnbFallback] = useState(false);
@@ -487,7 +487,7 @@ function AppContent() {
               {theme === "dark" ? tr(UI.themeLight, lang) : tr(UI.themeDark, lang)}
             </span>
           </button>
-          <button className="pill judge-btn" onClick={openJudge} aria-label={tr(JUDGE.button, lang)} title={tr(JUDGE.button, lang)}><span className="pill-icon">★</span><span className="pill-text">{tr(JUDGE.button, lang)}</span></button>
+          <button className="pill judge-btn" onClick={() => openJudge()} aria-label={tr(JUDGE.button, lang)} title={tr(JUDGE.button, lang)}><span className="pill-icon">★</span><span className="pill-text">{tr(JUDGE.button, lang)}</span></button>
           <button className="pill" onClick={() => setOnboard(true)} aria-label={tr(ONBOARD.replay, lang)} title={tr(ONBOARD.replay, lang)}><span className="pill-icon">?</span><span className="pill-text">{tr(ONBOARD.replay, lang)}</span></button>
           <button className="pill mono" onClick={() => setShowSources(true)} aria-label={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"} title={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"}><span className="pill-icon">i</span><span className="pill-text">{lang === "bn" ? "উপাত্তের উৎস" : "DATA SOURCES"}</span></button>
         </div>
@@ -699,8 +699,8 @@ function AppContent() {
       {!bg && addon && <NisarPill step={addon.step} lang={lang} onDismiss={() => setAddon(null)} />}
 
       {showSources && <SourcesSheet sources={sources} onClose={() => setShowSources(false)} lang={lang} />}
-      {onboard && !judge && <Onboarding lang={lang} setLang={prof.setLang} catalog={catalog} progress={onbProgress} onPlace={onboardPlace} onDone={finishOnboard} onJudge={() => { finishOnboard(); openJudge(); }} />}
-      {judge && <JudgeTour lang={lang} setLang={prof.setLang} catalog={catalog} onPick={judgePick} onClose={() => setJudge(false)} />}
+      {onboard && !judge && <Onboarding lang={lang} setLang={prof.setLang} catalog={catalog} progress={onbProgress} onPlace={onboardPlace} onDone={finishOnboard} onJudge={(ready) => { finishOnboard(); openJudge(ready); }} />}
+      {judge && <JudgeTour startAtPlaces={judge === "ready"} lang={lang} setLang={prof.setLang} catalog={catalog} onPick={judgePick} onClose={() => setJudge(false)} />}
     </div>
   );
 }
