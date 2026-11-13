@@ -94,7 +94,7 @@ export const UI = {
   status: { ok: ["Good", "ভালো"], watch: ["Careful", "সতর্ক"], alert: ["Danger", "বিপদ"] } as Record<Status, T2>,
   noData: ["No data at your location yet. Nearest:", "আপনার এলাকায় এখনো তথ্য নেই। সবচেয়ে কাছে:"],
   prepTitle: ["No radar data here yet", "এখানে এখনো রাডার তথ্য নেই"],
-  prepBody: ["We can prepare this place from free satellite radar. It takes about a minute.", "বিনামূল্যের স্যাটেলাইট রাডার থেকে এই জায়গার তথ্য তৈরি করা যায়। প্রায় এক মিনিট লাগবে।"],
+  prepBody: ["We can prepare this place from free satellite radar, including NASA's NISAR. It takes 2–3 minutes.", "নাসার নিসারসহ বিনামূল্যের স্যাটেলাইট রাডার থেকে এই জায়গার তথ্য তৈরি করা যায়। ২–৩ মিনিট লাগবে।"],
   prepGo: ["Prepare this place", "তথ্য তৈরি করুন"],
   prepWait: ["Preparing your place…", "আপনার জায়গার তথ্য তৈরি হচ্ছে…"],
   prepFail: ["Could not prepare this place", "তথ্য তৈরি করা যায়নি"],
@@ -102,6 +102,12 @@ export const UI = {
   partial: ["Part of this area is outside the analysed square.", "এই এলাকার কিছু অংশ বিশ্লেষিত এলাকার বাইরে।"],
   prepWhole: ["Prepare the whole area", "পুরো এলাকার তথ্য তৈরি করুন"],
   offline: ["The area service is offline.", "সার্ভার এখন বন্ধ।"],
+  prepBg: ["Keeps going if you switch tabs", "অন্য ট্যাবে গেলেও চলতে থাকবে"],
+  prepReady: ["Your place is ready", "আপনার জায়গার তথ্য তৈরি"],
+  prepLost: ["The area service restarted. Please try again.", "সার্ভার আবার চালু হয়েছে। আবার চেষ্টা করুন।"],
+  prepBusy: ["Another place is being prepared. Please wait for it to finish.", "আরেকটি জায়গার তথ্য তৈরি হচ্ছে। শেষ হওয়া পর্যন্ত অপেক্ষা করুন।"],
+  open: ["Open", "খুলুন"],
+  queued: ["Waiting in line", "লাইনে অপেক্ষা"],
   editShape: ["Edit shape", "আকার বদলান"],
   editHint: ["Drag corners · drag + to add · double-tap a corner to remove", "কোণ টেনে সরান · + টেনে নতুন কোণ · কোণে দুইবার চাপলে মুছবে"],
   save: ["Save", "সংরক্ষণ"],
@@ -393,4 +399,24 @@ export function useProfile() {
     updateSite: (m: ModuleId, id: string, ch: Partial<Site>) => m !== "vis" && save((q) => ({ ...q, sites: { ...q.sites, [m]: q.sites[m].map((x) => (x.id === id ? { ...x, ...ch } : x)) } })),
     removeSite: (m: ModuleId, id: string) => m !== "vis" && save((q) => ({ ...q, sites: { ...q.sites, [m]: q.sites[m].filter((x) => x.id !== id) } })),
   };
+}
+
+/** Backend job stages (prepare.py) -> plain words and how far along the job is. */
+const PREP_STAGES: Record<string, [T2, number]> = {
+  "Sending": [["Sending your place", "আপনার জায়গা পাঠানো হচ্ছে"], 3],
+  "Waiting to start": [["Waiting to start", "শুরুর অপেক্ষায়"], 6],
+  "Finding Sentinel-1 passes": [["Finding satellite passes", "স্যাটেলাইট পাস খোঁজা হচ্ছে"], 12],
+  "Downloading Sentinel-1 radar passes": [["Downloading radar images", "রাডার ছবি নামানো হচ্ছে"], 28],
+  "Reading L-band, elevation and land cover": [["Reading land height and land type", "জমির উচ্চতা ও ধরন পড়া হচ্ছে"], 48],
+  "Reading 38 years of water history": [["Reading 38 years of water history", "৩৮ বছরের পানির ইতিহাস পড়া হচ্ছে"], 58],
+  "Checking NISAR passes": [["Checking NASA NISAR passes", "নাসার নিসার পাস দেখা হচ্ছে"], 66],
+  "Reading NISAR L-band radar": [["Reading NASA NISAR radar", "নাসার নিসার রাডার পড়া হচ্ছে"], 74],
+  "Building layers": [["Building your map", "মানচিত্র তৈরি হচ্ছে"], 94],
+  "Ready": [["Ready", "তৈরি"], 100],
+};
+
+export function prepProgress(stage: string | undefined, position: number | undefined, lang: Lang): { text: string; pct: number } {
+  if (position) return { text: `${tr(UI.queued, lang)} #${num(String(position), lang)}`, pct: 4 };
+  const [label, pct] = PREP_STAGES[stage ?? ""] ?? [[stage ?? "", stage ?? ""], 40];
+  return { text: tr(label, lang), pct };
 }

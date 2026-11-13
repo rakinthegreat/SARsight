@@ -11,7 +11,7 @@ import RegionMap, { type DrawMode } from "./RegionMap";
 import Scrubber from "./Scrubber";
 import Chart from "./Chart";
 import Assist, { type Step } from "./Assist";
-import { HOME, JOBS, ONBOARD, UI, getStoredProfile, num, squareAround, tr, useProfile } from "../lib/assist";
+import { HOME, JOBS, ONBOARD, UI, getStoredProfile, num, prepProgress, squareAround, tr, useProfile } from "../lib/assist";
 import Onboarding, { ONBOARDED, type OnboardChoice, type OnboardProgress } from "./Onboarding";
 import PlaceSearch from "./PlaceSearch";
 import { areaStatus, rememberArea, removeSavedArea, requestArea, savedAreas, serverAreas, type AreaJob } from "../lib/areas";
@@ -80,7 +80,12 @@ function AppContent() {
     }
     return Array.from(map.values());
   }, [baseCatalog, customs]);
-  const [prep, setPrep] = useState<{ poly: LonLat[]; scenario?: Scenario; job?: AreaJob; error?: string } | null>(null);
+  /** The "prepare this place" card; watching = it is showing the background job's progress. */
+  const [prep, setPrep] = useState<{ poly: LonLat[]; scenario?: Scenario; error?: string; watching?: boolean } | null>(null);
+  /** The area being built on the backend. Lives apart from the card, so it keeps going across modules and reloads. */
+  const [bg, setBg] = useState<BgJob | null | undefined>(undefined); // undefined = not read from storage yet
+  useEffect(() => setBg(loadBg()), []); // after mount, so the server render matches
+  useEffect(() => { if (bg === undefined) return; try { if (bg?.job.id) localStorage.setItem(BG_KEY, JSON.stringify(bg)); else localStorage.removeItem(BG_KEY); } catch { /* storage unavailable */ } }, [bg]);
   const autoSite = useRef<LonLat[] | null>(null);
   const [edit, setEdit] = useState<{ orig: LonLat[]; hist: LonLat[][] } | null>(null);
   const [sources, setSources] = useState<Record<string, Source>>({});
@@ -257,44 +262,62 @@ function AppContent() {
   });
 
   const scenarioFor = (): Scenario => prep?.scenario ?? (module === "econ" && job ? job.scenarios[0] : module === "vis" && region ? region.manifest.scenario : "flood");
+  const bgBusy = !!bg && !bg.ready && !bg.error && bg.job.state !== "failed";
   const startPrep = async () => {
-    if (!prep) return;
-    const name = assist ? tr(module === "econ" && job ? job.mine : HOME.mine, lang) : "Your area";
-    setPrep({ ...prep, job: { id: "", state: "queued", stage: "Sending" }, error: undefined });
+    if (!prep || bgBusy) return;
+    const poly = prep.poly, name = assist ? tr(module === "econ" && job ? job.mine : HOME.mine, lang) : "Your area";
+    setPrep({ ...prep, error: undefined, watching: true });
+    setBg({ poly, module, job: { id: "", state: "queued", stage: "Sending" } });
     try { const e = region?.manifest.epochs, win = !assist && e?.length ? [e[0], e[e.length - 1]] as [string, string] : undefined;
-      const j = await requestArea(prep.poly, scenarioFor(), name, win); setPrep((q) => q && { ...q, job: j }); }
-    catch (e) { setPrep((q) => q && { ...q, job: undefined, error: e instanceof TypeError ? tr(UI.offline, lang) : String((e as Error).message ?? e) }); }
+      const j = await requestArea(poly, scenarioFor(), name, win); setBg((b) => b && { ...b, job: j }); }
+    catch (e) { setBg(null); setPrep((q) => q && { ...q, watching: false, error: e instanceof TypeError ? tr(UI.offline, lang) : String((e as Error).message ?? e) }); }
   };
-  const jobId = prep?.job?.id, jobState = prep?.job?.state;
+  const bgId = bg?.job.id, bgState = bg?.job.state;
   useEffect(() => {
-    if (!jobId || jobState === "failed") return;
-    let alive = true, timer: ReturnType<typeof setTimeout>;
+    if (!bgId || bgState === "failed" || bgState === "done") return;
+    let alive = true, misses = 0, timer: ReturnType<typeof setTimeout>;
     const tick = async () => {
       try {
-        const j = await areaStatus(jobId);
+        const j = await areaStatus(bgId);
         if (!alive) return;
+        misses = 0;
         if (j.state === "done" && j.entry) {
           const { sources: src, ...e } = j.entry;
           rememberArea(e);
           setCustoms((c) => [...c.filter((x) => x.id !== e.id), e]);
           if (src) setSources((s) => ({ ...src, ...s }));
-          const poly = prep?.poly ?? null;
-          setPrep(null);
-          if (assist) { autoSite.current = poly; setAdding(true); } else pending.current = poly;
-          setModule((m) => (e.modules.includes(m) ? m : e.modules[0]));
-          setSelected(e.id);
+          setBg((b) => b && { ...b, job: j, ready: e });
           return;
         }
-        setPrep((q) => q && { ...q, job: j, error: j.state === "failed" ? j.error ?? "failed" : undefined });
-        if (j.state !== "failed") timer = setTimeout(tick, 2500);
-      } catch { if (alive) timer = setTimeout(tick, 4000); }
+        const err = j.state === "failed" ? j.error ?? "failed" : j.state === "unknown" ? tr(UI.prepLost, lang) : undefined;
+        setBg((b) => b && { ...b, job: j, error: err });
+        if (!err) timer = setTimeout(tick, 2500);
+      } catch {
+        if (!alive) return;
+        if (++misses >= 8) setBg((b) => b && { ...b, error: tr(UI.offline, lang) }); // backend gone for ~30 s
+        else timer = setTimeout(tick, 4000);
+      }
     };
     timer = setTimeout(tick, 1500);
     return () => { alive = false; clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [jobId, jobState]);
+  }, [bgId, bgState]);
+  /** Open a finished area: in EconAssist / HazAssist it becomes a saved site; in VisAssist the drawn shape is analysed. */
+  const openArea = (e: CatalogEntry, poly: LonLat[]) => {
+    const m = e.modules.includes(module) ? module : e.modules[0];
+    if (m !== "vis") { autoSite.current = poly; setAdding(true); } else pending.current = poly;
+    setBg(null); setPrep(null); setModule(m); setSelected(e.id);
+  };
+  // still watching the card when it finishes: open straight away; otherwise the floating pill offers "Open"
+  useEffect(() => {
+    if (bg?.ready && prep?.watching) openArea(bg.ready, bg.poly);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bg?.ready, prep?.watching]);
 
-  const switchModule = (m: ModuleId) => { setModule(m); setSiteId(null); setAdding(false); setMode(null); if (entry && !entry.modules.includes(m)) setSelected(null); };
+  const switchModule = (m: ModuleId) => {
+    setModule(m); setSiteId(null); setAdding(false); setMode(null); if (entry && !entry.modules.includes(m)) setSelected(null);
+    if (prep?.watching && bgBusy) setPrep(null); // the build keeps going; its progress moves to the floating pill
+  };
   const choose = useCallback((id: string) => {
     const r = catalog.find((c) => c.id === id);
     if (r && !r.modules.includes(module)) setModule(r.modules[0]);
@@ -348,17 +371,19 @@ function AppContent() {
     // outside every prepared region: build this place on demand from free satellite data
     const scenario: Scenario = jd ? jd.scenarios[0] : "flood";
     setSelected(null);
-    setPrep({ poly: sq, scenario, job: { id: "", state: "queued", stage: "Sending" } });
+    setPrep({ poly: sq, scenario, watching: true });
+    setBg({ poly: sq, module: c.module, job: { id: "", state: "queued", stage: "Sending" } });
     requestArea(sq, scenario, simple ? tr(jd ? jd.mine : HOME.mine, lang) : "Your area")
-      .then((j) => setPrep((q) => q && { ...q, job: j }))
-      .catch(() => setPrep((q) => q && { ...q, job: undefined, error: "offline" }));
+      .then((j) => setBg((b) => b && { ...b, job: j }))
+      .catch(() => { setBg(null); setPrep((q) => q && { ...q, watching: false, error: "offline" }); });
   };
+  const prepError = prep?.error ?? (prep?.watching ? bg?.error : undefined);
   useEffect(() => { // preparing failed during onboarding: fall back to the nearest place we already have
-    if (!onboard || !prep?.error || !onbFrom.current) return;
+    if (!onboard || !prepError || !onbFrom.current) return;
     const { ll, pool } = onbFrom.current, nn = pool.map((r) => ({ r, km: kmBetween(ll, r.center) })).sort((a, b) => a.km - b.km)[0];
-    onbFrom.current = null; setPrep(null); setOnbFallback(true);
+    onbFrom.current = null; setPrep(null); setBg(null); setOnbFallback(true);
     if (nn) { setAdding(module !== "vis"); setSelected(nn.r.id); }
-  }, [onboard, prep?.error, module]);
+  }, [onboard, prepError, module]);
 
   const finishGlobe = (poly: LonLat[]) => {
     setMode(null); setGlobeDraft([]);
@@ -385,7 +410,7 @@ function AppContent() {
   };
 
   const onbProgress: OnboardProgress = onbFallback ? { state: "fallback" }
-    : prep?.job && !prep.error ? { state: "working", stage: prep.job.position ? `#${prep.job.position}` : prep.job.stage }
+    : prep?.watching && bg && !prepError ? { state: "working", stage: bg.job.position ? `#${bg.job.position}` : bg.job.stage }
     : !selected || (region?.manifest.id === selected && !autoSite.current) ? { state: "ready" } : { state: "working" };
 
   const rep = useMemo(() => (region && polygon ? report(region, t, polygon, lang) : null), [region, t, polygon, lang]);
@@ -480,8 +505,9 @@ function AppContent() {
 
       <aside className="panel" ref={panelRef}>
         {error && <div className="error"><span>{error}</span><button className="iconbtn small" onClick={() => setError(null)} aria-label={lang === "bn" ? "বাতিল" : "Dismiss"}><Icon name="close" size={16} /></button></div>}
-        {prep && <PrepareCard prep={prep} lang={lang} pickScenario={module === "vis"} scenario={scenarioFor()}
-          onScenario={(sc) => setPrep({ ...prep, scenario: sc })} onGo={startPrep} onCancel={() => setPrep(null)} />}
+        {prep && <PrepareCard job={prep.watching ? bg?.job : undefined} error={prepError} busy={bgBusy && !prep.watching} lang={lang} pickScenario={module === "vis"} scenario={scenarioFor()}
+          onScenario={(sc) => setPrep({ ...prep, scenario: sc })} onGo={startPrep}
+          onCancel={() => { if (prep.watching && !bgBusy) setBg(null); setPrep(null); }} />}
         {notice && <div className="notice">{notice}<button className="iconbtn small" onClick={() => setNotice(null)} aria-label={lang === "bn" ? "বাতিল" : "Dismiss"}><Icon name="close" size={16} /></button></div>}
         {mode === "area" && stage === "globe" && (
           <div className="drawbar">
@@ -625,6 +651,9 @@ function AppContent() {
         ))}
       </nav>
 
+      {bg && !prep?.watching && <PrepPill bg={bg} lang={lang} onShow={() => setPrep({ poly: bg.poly, watching: true })}
+        onOpen={() => bg.ready && openArea(bg.ready, bg.poly)} onDismiss={() => setBg(null)} />}
+
       {showSources && <SourcesSheet sources={sources} onClose={() => setShowSources(false)} lang={lang} />}
       {onboard && <Onboarding lang={lang} setLang={prof.setLang} catalog={catalog} progress={onbProgress} onPlace={onboardPlace} onDone={finishOnboard} />}
     </div>
@@ -644,36 +673,69 @@ function coverage(poly: LonLat[], [w, s, e, n]: CatalogEntry["bbox"]) {
   return inPoly ? inBoth / inPoly : 0;
 }
 
+type BgJob = { poly: LonLat[]; module: ModuleId; job: AreaJob; error?: string; ready?: CatalogEntry };
+const BG_KEY = "sarsight.prepJob";
+function loadBg(): BgJob | null {
+  try { const b = JSON.parse(localStorage.getItem(BG_KEY) ?? "null") as BgJob | null; return b?.job?.id ? b : null; } catch { return null; }
+}
+
 const PREP_SCENARIOS: { id: Scenario; label: [string, string] }[] = [
   { id: "flood", label: ["Floods", "বন্যা"] }, { id: "agriculture", label: ["Farming", "কৃষি"] }, { id: "subsidence", label: ["Ground motion", "মাটির গতিবিধি"] }, { id: "marine", label: ["Coast & sea", "উপকূল ও সাগর"] },
 ];
 
-function PrepareCard({ prep, lang, pickScenario, scenario, onScenario, onGo, onCancel }: {
-  prep: { job?: AreaJob; error?: string }; lang: "en" | "bn"; pickScenario: boolean; scenario: Scenario;
+function PrepareCard({ job, error, busy, lang, pickScenario, scenario, onScenario, onGo, onCancel }: {
+  job?: AreaJob; error?: string; busy: boolean; lang: "en" | "bn"; pickScenario: boolean; scenario: Scenario;
   onScenario: (s: Scenario) => void; onGo: () => void; onCancel: () => void;
 }) {
   const L = (x: [string, string]) => tr(x, lang);
-  const running = !!prep.job && prep.job.state !== "failed" && !prep.error;
+  const running = !!job && job.state !== "failed" && !error, p = prepProgress(job?.stage, job?.position, lang);
   return (
     <div className={`prepare${running ? " running" : ""}`}>
       <div className="prepare-head">
-        <b>{running ? L(UI.prepWait) : prep.error ? L(UI.prepFail) : L(UI.prepTitle)}</b>
-        <button className="iconbtn small" onClick={onCancel} aria-label={L(UI.cancel)}><Icon name="close" size={18} /></button>
+        <b>{running ? L(UI.prepWait) : error ? <><span className="fail" aria-hidden>✕ </span>{L(UI.prepFail)}</> : L(UI.prepTitle)}</b>
+        <button className="iconbtn small" onClick={onCancel} aria-label={running ? L(UI.prepBg) : L(UI.cancel)}><Icon name="close" size={18} /></button>
       </div>
       {running ? (
         <>
-          <div className="prepare-bar"><span /></div>
-          <div className="dim small mono">{prep.job!.position ? (lang === "bn" ? `অপেক্ষমাণ #${num(String(prep.job!.position), lang)}` : `Queued #${prep.job!.position}`) : prep.job!.stage}</div>
+          <ProgressBar pct={p.pct} />
+          <div className="prepare-stage"><span className="small mono">{p.text}</span><b className="mono">{num(`${p.pct}%`, lang)}</b></div>
+          <p className="dim small">{L(UI.prepBg)}</p>
         </>
       ) : (
         <>
-          <p className="dim">{prep.error ?? L(UI.prepBody)}</p>
-          {pickScenario && !prep.error && (
+          <p className="dim">{error ?? (busy ? L(UI.prepBusy) : L(UI.prepBody))}</p>
+          {pickScenario && !error && !busy && (
             <div className="chips tight">{PREP_SCENARIOS.map((x) => <button key={x.id} className={x.id === scenario ? "chip on" : "chip"} onClick={() => onScenario(x.id)}>{tr(x.label, lang)}</button>)}</div>
           )}
-          <button className="action" onClick={onGo}><Icon name="sat" />{prep.error ? L(UI.retry) : L(UI.prepGo)}</button>
+          <button className="action" onClick={onGo} disabled={busy}><Icon name="sat" />{error ? L(UI.retry) : L(UI.prepGo)}</button>
         </>
       )}
+    </div>
+  );
+}
+
+function ProgressBar({ pct }: { pct: number }) {
+  return <div className="prepare-bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}><span style={{ width: `${pct}%` }} /></div>;
+}
+
+/** Floating status for an area being built in the background; visible in every module. */
+function PrepPill({ bg, lang, onShow, onOpen, onDismiss }: { bg: BgJob; lang: "en" | "bn"; onShow: () => void; onOpen: () => void; onDismiss: () => void }) {
+  const L = (x: [string, string]) => tr(x, lang), p = prepProgress(bg.job.stage, bg.job.position, lang);
+  const failed = !!bg.error || bg.job.state === "failed";
+  return (
+    <div className={`prep-pill ${bg.ready ? "ok" : failed ? "alert" : "busy"}`} role="status">
+      {bg.ready ? (
+        <><span className="pill-sym" aria-hidden>✓</span><b>{L(UI.prepReady)}</b><button className="chip on" onClick={onOpen}>{L(UI.open)}</button></>
+      ) : failed ? (
+        <><span className="pill-sym" aria-hidden>✕</span><button className="pill-main" onClick={onShow}><b>{L(UI.prepFail)}</b></button></>
+      ) : (
+        <button className="pill-main" onClick={onShow}>
+          <span className="pill-row"><b>{L(UI.prepWait)}</b><b className="mono">{num(`${p.pct}%`, lang)}</b></span>
+          <ProgressBar pct={p.pct} />
+          <span className="small mono dim">{p.text}</span>
+        </button>
+      )}
+      {(bg.ready || failed) && <button className="iconbtn small" onClick={onDismiss} aria-label={L(UI.cancel)}><Icon name="close" size={16} /></button>}
     </div>
   );
 }
