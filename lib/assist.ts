@@ -112,6 +112,7 @@ export const UI = {
   prepLost: ["The area service restarted. Please try again.", "সার্ভার আবার চালু হয়েছে। আবার চেষ্টা করুন।"],
   prepBusy: ["Another place is being prepared. Please wait for it to finish.", "আরেকটি জায়গার তথ্য তৈরি হচ্ছে। শেষ হওয়া পর্যন্ত অপেক্ষা করুন।"],
   open: ["Open", "খুলুন"],
+  menu: ["Menu", "মেনু"],
   queued: ["Waiting in line", "লাইনে অপেক্ষা"],
   editShape: ["Edit shape", "আকার বদলান"],
   editHint: ["Drag corners · drag + to add · double-tap a corner to remove", "কোণ টেনে সরান · + টেনে নতুন কোণ · কোণে দুইবার চাপলে মুছবে"],

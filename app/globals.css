@@ -188,7 +188,8 @@ p { margin: 0; }
 .tab { padding: 0 18px; height: 100%; color: var(--dim); font-size: 17px; font-weight: 550; border-bottom: 2px solid transparent; }
 .tab:hover { color: var(--text); }
 .tab.on { color: var(--text); border-bottom-color: var(--accent); }
-.top-right { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.top-right { margin-left: auto; display: flex; gap: 10px; align-items: center; position: relative; }
+.top-extra { display: contents; }
 .pill { border: 1px solid var(--line); color: var(--dim); padding: 6px 10px; border-radius: 99px; font-size: 11px; }
 
 .stage { position: relative; overflow: hidden; background: var(--bg); min-height: 0; }
@@ -788,7 +789,9 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 .pill-icon { display: none; }
 @media (max-width: 600px) {
   .top-right { gap: 6px; }
-  .top-right .pill:not(.lang) { width: 36px; height: 36px; padding: 0; display: grid; place-items: center; border-radius: 50%; }
+  .top-right .pill:not(.lang) { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; }
+  .top-right .pill.lang { min-height: 44px; }
+  .top-extra { display: none; }
   .top-right .pill .pill-text { display: none; }
   .top-right .pill .pill-icon { display: block; font: 700 15px/1 var(--font-mono), monospace; }
   .map-ui .cellsize { max-width: 46%; text-align: right; font-size: 10px; line-height: 1.3; }
@@ -827,9 +830,13 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
   .top-right .pill .pill-icon { display: grid; place-items: center; }
 }
 @media (max-width: 600px) {
-  .top-right { gap: 5px; }
-  .top-right .pill:not(.lang) { width: 34px; height: 34px; }
+  .top-right { gap: 6px; }
   .top-right .pill.lang { padding: 6px 12px; }
+}
+@media (max-width: 400px) {
+  .top { padding-left: 14px; padding-right: 14px; }
+  .top-right { gap: 4px; }
+  .top-right .pill.lang { padding: 6px 10px; }
 }
 
 /* ---------- judges' tour (reuses the onboarding stage) ---------- */
@@ -848,3 +855,23 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 .judge-tag { margin-left: auto; padding: 3px 8px; border-radius: 99px; background: var(--accent); color: var(--bg); font-size: 11px; font-weight: 700; letter-spacing: .06em; flex: none; }
 .onb-p.small { font-size: 14px; }
 .more-data { display: flex; align-items: center; gap: 10px; color: var(--dim); }
+
+/* ---------- phones ---------- */
+.top-menu-bg { position: fixed; inset: 0; z-index: 60; }
+.top-menu { position: absolute; top: calc(100% + 8px); right: 0; z-index: 61; flex-direction: column; min-width: 220px; padding: 6px; border-radius: var(--r); background: var(--surface); border: 1px solid var(--line); box-shadow: 0 12px 30px rgba(0,0,0,.45); animation: rise .2s; }
+.top-menu button { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 10px; color: var(--text); font-size: 16px; text-align: left; }
+.top-menu button:hover { background: var(--raised); }
+.menu-glyph { width: 20px; text-align: center; font: 700 16px/1 var(--font-mono), monospace; color: var(--dim); }
+.story .sec-head.toggle { min-height: 44px; align-items: center; }
+.stage:has(.stage-bottom) .globe-zoom { bottom: 140px; }
+@media (max-width: 900px) {
+  .stage:has(.stage-bottom) .globe-zoom { bottom: 96px; right: 12px; }
+  .scrub input[type="range"] { height: 44px; }
+  .sheet-bg { padding: 0; place-items: end stretch; }
+  .sheet { width: 100%; max-height: 88dvh; border-radius: 20px 20px 0 0; border-bottom: 0; padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .sources a { display: inline-block; padding: 12px 0; }
+}
+@media (max-height: 700px) {
+  .onb-art { height: min(18vh, 150px); }
+  .onb-h { font-size: clamp(26px, 6vw, 36px); }
+}

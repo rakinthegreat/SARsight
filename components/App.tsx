@@ -133,6 +133,7 @@ function AppContent() {
   const [compare, setCompare] = useState(false);
   const [overlay, setOverlay] = useState<NisarPass | null>(null);
   const [showSources, setShowSources] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
   const pending = useRef<LonLat[] | null>(null);
   const [onboard, setOnboard] = useState(false);
   const [judge, setJudge] = useState<false | "tour" | "ready">(false);
@@ -475,6 +476,8 @@ function AppContent() {
         </nav>
         <div className="top-right">
           <button className="pill lang" onClick={() => prof.setLang(lang === "en" ? "bn" : "en")} lang={lang === "en" ? "bn" : "en"}>{lang === "en" ? "বাংলা" : "English"}</button>
+          <button className="pill judge-btn" onClick={() => openJudge()} aria-label={tr(JUDGE.button, lang)} title={tr(JUDGE.button, lang)}><span className="pill-icon">★</span><span className="pill-text">{tr(JUDGE.button, lang)}</span></button>
+          <div className="top-extra">
           <button
             className="pill"
             onClick={() => prof.setTheme(theme === "dark" ? "light" : "dark")}
@@ -487,9 +490,18 @@ function AppContent() {
               {theme === "dark" ? tr(UI.themeLight, lang) : tr(UI.themeDark, lang)}
             </span>
           </button>
-          <button className="pill judge-btn" onClick={() => openJudge()} aria-label={tr(JUDGE.button, lang)} title={tr(JUDGE.button, lang)}><span className="pill-icon">★</span><span className="pill-text">{tr(JUDGE.button, lang)}</span></button>
           <button className="pill" onClick={() => setOnboard(true)} aria-label={tr(ONBOARD.replay, lang)} title={tr(ONBOARD.replay, lang)}><span className="pill-icon">?</span><span className="pill-text">{tr(ONBOARD.replay, lang)}</span></button>
           <button className="pill mono" onClick={() => setShowSources(true)} aria-label={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"} title={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"}><span className="pill-icon">i</span><span className="pill-text">{lang === "bn" ? "উপাত্তের উৎস" : "DATA SOURCES"}</span></button>
+          </div>
+          <button className="pill mobile-only more-btn" onClick={() => setMoreOpen(!moreOpen)} aria-expanded={moreOpen} aria-label={tr(UI.menu, lang)}><span className="pill-icon">⋯</span></button>
+          {moreOpen && (<>
+            <div className="top-menu-bg" onClick={() => setMoreOpen(false)} />
+            <div className="top-menu mobile-only" role="menu">
+              <button role="menuitem" onClick={() => { setMoreOpen(false); prof.setTheme(theme === "dark" ? "light" : "dark"); }}><Icon name={theme === "dark" ? "sun" : "moon"} size={20} />{theme === "dark" ? tr(UI.themeLight, lang) : tr(UI.themeDark, lang)}</button>
+              <button role="menuitem" onClick={() => { setMoreOpen(false); setOnboard(true); }}><span className="menu-glyph">?</span>{tr(ONBOARD.replay, lang)}</button>
+              <button role="menuitem" onClick={() => { setMoreOpen(false); setShowSources(true); }}><span className="menu-glyph">i</span>{lang === "bn" ? "উপাত্তের উৎস" : "Data sources"}</button>
+            </div>
+          </>)}
         </div>
       </header>
 
