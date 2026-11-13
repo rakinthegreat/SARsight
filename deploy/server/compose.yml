@@ -1,0 +1,17 @@
+# SARsight backend on a single server, next to anything else running there.
+# Backend on 127.0.0.1:8100 only; Caddy serves it over HTTPS on 443 with an automatic certificate.
+# Set SARSIGHT_HOST in .env next to this file (e.g. 168-107-89-203.sslip.io), and the Earthdata login in backend.env.
+services:
+  backend:
+    build: { context: .., dockerfile: Dockerfile }
+    env_file: backend.env
+    restart: unless-stopped
+    ports: ["127.0.0.1:8100:7860"]
+    volumes: ["areas:/home/user/app/data/custom"]  # built places survive restarts
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment: { SARSIGHT_HOST: "${SARSIGHT_HOST}" }
+    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro", "caddy_data:/data"]
+volumes: { areas: {}, caddy_data: {} }
