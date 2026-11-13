@@ -20,6 +20,21 @@ function features(r) {
   return out;
 }
 
+/** float32 -> IEEE half-precision bits, round half to even (same as numpy). Layers ship as float16: half the download, error far below what the app shows. */
+function toHalf(a) {
+  const f = new Float32Array(1), u = new Uint32Array(f.buffer), out = new Uint16Array(a.length);
+  const rnd = (v, shift) => { const q = Math.floor(v / 2 ** shift), r = v - q * 2 ** shift, h = 2 ** (shift - 1); return r > h || (r === h && q & 1) ? q + 1 : q; };
+  for (let i = 0; i < a.length; i++) {
+    f[0] = a[i]; const x = u[0], s = (x >>> 16) & 0x8000, e = (x >>> 23) & 0xff, m = x & 0x7fffff;
+    if (e === 255) out[i] = s | 0x7c00 | (m ? 0x200 : 0);              // NaN / Inf
+    else if (e > 142) out[i] = s | 0x7c00;                              // too big -> Inf
+    else if (e < 102) out[i] = s;                                       // too small -> 0
+    else if (e < 113) out[i] = s | rnd(m | 0x800000, 126 - e);          // subnormal
+    else out[i] = s | (((e - 112) << 10) + rnd(m, 13));                 // normal (a carry rounds into the exponent)
+  }
+  return out;
+}
+
 // ---------- build ----------
 const usedSources = {};
 
@@ -33,10 +48,10 @@ function buildRegion(r, realDir, dir) {
   mkdirSync(dir, { recursive: true });
   const layers = [];
   for (const [id, L] of Object.entries(meta.layers)) {
-    copyFileSync(join(realDir, `${id}.f32`), join(dir, `${id}.f32`));
     const a = read(id); let lo = Infinity, hi = -Infinity;
+    writeFileSync(join(dir, `${id}.f16`), toHalf(a));
     for (const x of a) if (Number.isFinite(x)) { if (x < lo) lo = x; if (x > hi) hi = x; }
-    layers.push({ id, unit: L.unit, label: L.label, file: `${id}.f32`, static: L.static, observed: true, source: L.source,
+    layers.push({ id, unit: L.unit, label: L.label, file: `${id}.f16`, static: L.static, observed: true, source: L.source,
       range: [Math.floor(lo), Math.ceil(hi)], ...(L.date ? { date: L.date, granule: L.granule } : {}), ...(L.dates ? { dates: L.dates } : {}), ...(L.frame ? { frame: L.frame } : {}) });
     usedSources[L.source] = meta.sources[L.source];
   }
@@ -47,7 +62,7 @@ function buildRegion(r, realDir, dir) {
   const toLL = ([x, y]) => [+(bbox[0] + x * (bbox[2] - bbox[0])).toFixed(5), +(bbox[3] - y * (bbox[3] - bbox[1])).toFixed(5)];
   const feats = (r.custom ? [] : features(r)).map(({ box, ...rest }) => ({ ...rest, polygon: [[box[0], box[1]], [box[2], box[1]], [box[2], box[3]], [box[0], box[3]]].map(toLL) }));
   const entry = { id: r.id, name: r.name, place: r.place, country: r.country, scenario: r.scenario, modules: r.modules, center: r.center, bbox, observed: true, ...(r.custom ? { custom: true } : {}) };
-  const manifest = { ...entry, grid: { cols: N, rows: N }, dtype: "float32", epochs: dates, orbit: meta.orbit, fetched: meta.fetched,
+  const manifest = { ...entry, grid: { cols: N, rows: N }, dtype: "float16", epochs: dates, orbit: meta.orbit, fetched: meta.fetched,
     ...(meta.event ? { event: { ...meta.event, epoch: eventEpoch } } : {}), layers, features: feats,
     ...(places ? { places: true } : {}), drivers: meta.drivers ?? null, quakes: meta.quakes ?? [], nisar: meta.nisar ?? [] };
   writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest));

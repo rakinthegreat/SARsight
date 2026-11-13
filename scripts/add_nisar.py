@@ -46,12 +46,14 @@ def add(rid: str, d: Path | None = None) -> dict:
     science = fetch_nisar_science({"id": rid}, bbox, m.get("nisar", []), dates)
     if "nisar_disp" in science and ("deformation" not in have or next(L for L in m["layers"] if L["id"] == "deformation")["source"] == "asf"):
         science["deformation"], science["coherence"] = science.pop("nisar_disp"), science.pop("nisar_coh")
+    half = m.get("dtype") == "float16"
     for lid, v in science.items():
         a = v.pop("data")
-        a.astype("<f4").tofile(d / f"{lid}.f32")
+        fname = f"{lid}.f16" if half else f"{lid}.f32"
+        a.astype("<f2" if half else "<f4").tofile(d / fname)
         ok = a[np.isfinite(a)]
         layer = {"id": lid, "unit": "dB" if lid in ("nisar_hh", "nisar_hv") else ("cm" if lid in ("nisar_disp", "deformation") else ""),
-                 "label": LABELS[lid], "file": f"{lid}.f32", "static": a.ndim == 2, "observed": True, "source": "asf",
+                 "label": LABELS[lid], "file": fname, "static": a.ndim == 2, "observed": True, "source": "asf",
                  "range": [int(np.floor(ok.min())), int(np.ceil(ok.max()))] if ok.size else [0, 0], **v}
         m["layers"] = [L for L in m["layers"] if L["id"] != lid] + [layer]
     (d / "manifest.json").write_text(json.dumps(m, ensure_ascii=False, separators=(",", ":")), encoding="utf8")

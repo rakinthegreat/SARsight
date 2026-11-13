@@ -2,7 +2,7 @@
 // EconAssist / HazAssist for everyday users: who you are → where → tap your place → one colour, one sentence.
 import { useMemo, useState, type ReactNode } from "react";
 import type { CatalogEntry, ModuleId, RegionData } from "../lib/data/types";
-import { EVENT, HOME, JOBS, UI, advise, eventLine, eventStatus, speak, stopSpeaking, useSpeaking, statusHistory, tr, type Job, type Lang, type Site } from "../lib/assist";
+import { EVENT, HOME, JOBS, UI, advise, eventLine, eventStatus, speak, stopSpeaking, useSpeaking, statusHistory, num, tr, type Job, type Lang, type Site } from "../lib/assist";
 import type { Status } from "../lib/analysis";
 import Icon, { scenarioIcon } from "./Icon";
 import { useNearbyEvents } from "../lib/events";
@@ -24,6 +24,7 @@ export default function Assist(p: {
   drawMode: "point" | "area" | null; onDrawMode: (m: "point" | "area") => void; onCheckArea: () => void; onCancel: (() => void) | null;
   detail: ReactNode;
   error?: string | null;
+  progress?: [number, number] | null;
 }) {
   const { lang, step, region, t } = p;
   const L = (s: [string, string]) => tr(s, lang);
@@ -121,7 +122,7 @@ export default function Assist(p: {
         </div>
       );
     }
-    return <div className="assist"><div className="loading mono">{L(UI.loading)}</div></div>;
+    return <div className="assist"><div className="loading mono">{p.progress ? num(L(UI.loadingOf).replace("{d}", String(p.progress[0])).replace("{n}", String(p.progress[1])), lang) : L(UI.loading)}</div></div>;
   }
   const e = region.manifest.epochs, h0 = Math.max(0, e.length - 12); // simple view: the last 12 passes
   return (

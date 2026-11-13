@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogEntry, LonLat, ModuleId, NisarPass, RegionData, Source } from "../lib/data/types";
-import { forgetRegion, loadCatalog, loadRegion } from "../lib/data/provider";
+import { forgetRegion, loadCatalog, loadRegion, unwatchRegion } from "../lib/data/provider";
 import { LANDCOVER, LANDCOVER_BN, WATER_COLORS, gradientCss, viewDef, viewRange, viewsFor, type ViewId } from "../lib/views";
 import { INDICATOR_LABELS_BN, INDICATOR_WORDS_BN, crop, fmtLL, moistureIndex, nextPassSchedule, pointInPolygon, polygonMask, regionIndicators, report, transect, type Indicator, type Report, type Status } from "../lib/analysis";
 import { STORIES } from "../lib/stories";
@@ -103,6 +103,7 @@ function AppContent() {
     return p.sites[assistMod]?.[0]?.region ?? null;
   });
   const [region, setRegion] = useState<RegionData | null>(null);
+  const [loadProg, setLoadProg] = useState<[number, number] | null>(null);
   const [view, setView] = useState<ViewId>("vv");
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -179,10 +180,14 @@ function AppContent() {
   useEffect(() => {
     setError(null);
     setRegion(null); setPolygon(null); setPolyName(null); setLine(null); setMode(null); setPlaying(false); setStage("globe"); setCompare(false); setOverlay(null);
+    setLoadProg(null);
     if (!selected) return;
     setPin(null); setNotice(null);
     let alive = true;
-    loadRegion(selected, catalog.find((c) => c.id === selected)?.base).then((r) => {
+    // the place opens once its core layers are in; later layers update it in place
+    const onUpdate = (r: RegionData) => { if (alive) setRegion((cur) => (cur?.manifest.id === r.manifest.id ? r : cur)); };
+    const onProgress = (d: number, n: number) => { if (alive) setLoadProg([d, n]); };
+    loadRegion(selected, catalog.find((c) => c.id === selected)?.base, onUpdate, onProgress).then((r) => {
       if (!alive) return;
       setError(null);
       setRegion(r);
@@ -202,16 +207,18 @@ function AppContent() {
       setSelected(null);
       setSiteId(null);
     });
-    return () => { alive = false; };
+    return () => { alive = false; unwatchRegion(selected, onUpdate, onProgress); };
   }, [selected]);
 
-  useEffect(() => {
+  const regionId = region?.manifest.id;
+  useEffect(() => { // a newly opened place (not each later layer arriving): pick its first view
     if (!region) return;
     setView(viewsFor(region, module).observed[0]);
     if (module === "vis") { setStage("globe"); return; }
     const id = setTimeout(() => setStage("map"), 1700);
     return () => clearTimeout(id);
-  }, [region, module]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regionId, module]);
 
   const entry = catalog.find((r) => r.id === selected) ?? null;
   const list = catalog.filter((r) => r.modules.includes(module));
@@ -539,6 +546,7 @@ function AppContent() {
       </main>
 
       <aside className="panel" ref={panelRef}>
+        {region?.loading && <div className="more-data small mono" role="status"><i className="spin" />{num(tr(UI.moreData, lang).replace("{d}", String(region.loading.done)).replace("{n}", String(region.loading.total)), lang)}</div>}
         {error && <div className="error"><span>{error}</span><button className="iconbtn small" onClick={() => setError(null)} aria-label={lang === "bn" ? "বাতিল" : "Dismiss"}><Icon name="close" size={16} /></button></div>}
         {prep && <PrepareCard job={prep.watching ? bg?.job : undefined} error={prepError} busy={bgBusy && !prep.watching} lang={lang} pickScenario={module === "vis"} scenario={scenarioFor()}
           onScenario={(sc) => setPrep({ ...prep, scenario: sc })} onGo={startPrep}
@@ -552,7 +560,7 @@ function AppContent() {
           </div>
         )}
         {assist ? (
-          <Assist lang={lang} module={module} step={step} job={prof.job} onJob={(j) => { prof.setJob(j); setSiteId(null); if (j) setSelected(null); }}
+          <Assist progress={loadProg} lang={lang} module={module} step={step} job={prof.job} onJob={(j) => { prof.setJob(j); setSiteId(null); if (j) setSelected(null); }}
             list={assistList} onChoose={choose} onLocate={locate} onPlace={placePin} entry={entry} region={region} t={t} setT={setT}
             site={site && edit && polygon ? { ...site, poly: polygon } : site} sites={sites} onSite={(id) => { setEdit(null); setSiteId(id); setAdding(false); }}
             crossSites={module === "econ" ? prof.sites.haz.filter((s) => catalog.some((c) => c.id === s.region)) : module === "haz" ? prof.sites.econ.filter((s) => catalog.some((c) => c.id === s.region)) : []}
@@ -636,7 +644,7 @@ function AppContent() {
               </div>
             </div>
 
-            {!region ? <div className="loading mono">{lang === "bn" ? "রাডার পাস পড়া হচ্ছে…" : "Reading radar passes…"}</div> : (
+            {!region ? <div className="loading mono">{loadProg ? num(tr(UI.loadingOf, lang).replace("{d}", String(loadProg[0])).replace("{n}", String(loadProg[1])), lang) : tr(UI.loading, lang)}</div> : (
               <>
                 {rep && polygon && coverage(polygon, region.manifest.bbox) < 0.95 && (
                   <div className="notice partial">{tr(UI.partial, lang)}<button className="chip" onClick={() => setPrep({ poly: polygon })}>{tr(UI.prepWhole, lang)}</button></div>

@@ -55,7 +55,7 @@ export interface Manifest extends CatalogEntry {
   /** region has a places.json of OpenStreetMap place names */
   places?: boolean;
   grid: { cols: number; rows: number };
-  dtype: "float32";
+  dtype: "float32" | "float16";
   epochs: string[];
   orbit?: number;
   fetched?: string;
@@ -72,4 +72,6 @@ export interface RegionData {
   /** folder the region's files were loaded from */
   root?: string;
   layers: Partial<Record<RawLayerId, Float32Array>>;
+  /** set while the remaining (non-essential) layers are still downloading */
+  loading?: { done: number; total: number };
 }

@@ -844,3 +844,4 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 .judge-places button { width: 100%; }
 .judge-tag { margin-left: auto; padding: 3px 8px; border-radius: 99px; background: var(--accent); color: var(--bg); font-size: 11px; font-weight: 700; letter-spacing: .06em; flex: none; }
 .onb-p.small { font-size: 14px; }
+.more-data { display: flex; align-items: center; gap: 10px; color: var(--dim); }

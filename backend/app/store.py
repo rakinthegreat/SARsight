@@ -32,7 +32,7 @@ def layer(region_id: str, layer_id: str) -> np.ndarray:
         shape = (m["grid"]["rows"], m["grid"]["cols"])
         return np.full(shape if layer_id in ("elevation", "landcover", "water_occurrence") else (len(m["epochs"]), *shape), np.nan, "f4")
     rows, cols = m["grid"]["rows"], m["grid"]["cols"]
-    arr = np.fromfile(DATA_DIR / region_id / meta["file"], dtype="<f4")
+    arr = np.fromfile(DATA_DIR / region_id / meta["file"], dtype="<f2" if m.get("dtype") == "float16" else "<f4").astype("f4")
     return arr.reshape((rows, cols) if meta.get("static") else (len(m["epochs"]), rows, cols))
 
 

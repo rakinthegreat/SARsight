@@ -12,18 +12,18 @@ public/data/
   catalog.json             { version, regions: [CatalogEntry], sources: {key: Source} }
   <region-id>/
     manifest.json          Manifest (lib/data/types.ts): epochs, layers + provenance, features, drivers, quakes, nisar passes
-    s1_vv.f32  s1_vh.f32   Sentinel-1 RTC γ⁰ in dB, [epoch][row][col]                          observed
-    lband_hh.f32 lband_hv.f32  ALOS-2 PALSAR-2 2021 γ⁰ in dB, [row][col]                       observed
-    elevation.f32          Copernicus DEM, metres                                               observed
-    landcover.f32          ESA WorldCover 2021 class codes (10 trees … 50 built-up … 80 water)  observed
-    water_occurrence.f32   JRC % of months with water, 1984–2021                                observed
-    deformation.f32        cumulative LOS motion in cm (+ towards the satellite), [epoch][row][col]   LiCSAR or NISAR, where available
-    coherence.f32          coherence of the pair ending at each pass, [epoch][row][col]               LiCSAR or NISAR, where available
-    nisar_hh/hv.f32        latest NISAR GCOV pass, dB, [row][col]                                     only with Earthdata login
-    nisar_disp/coh.f32     NISAR GUNW chained motion + coherence, [epoch][row][col]                   only with Earthdata login
+    s1_vv.f16  s1_vh.f16   Sentinel-1 RTC γ⁰ in dB, [epoch][row][col]                          observed
+    lband_hh.f16 lband_hv.f16  ALOS-2 PALSAR-2 2021 γ⁰ in dB, [row][col]                       observed
+    elevation.f16          Copernicus DEM, metres                                               observed
+    landcover.f16          ESA WorldCover 2021 class codes (10 trees … 50 built-up … 80 water)  observed
+    water_occurrence.f16   JRC % of months with water, 1984–2021                                observed
+    deformation.f16        cumulative LOS motion in cm (+ towards the satellite), [epoch][row][col]   LiCSAR or NISAR, where available
+    coherence.f16          coherence of the pair ending at each pass, [epoch][row][col]               LiCSAR or NISAR, where available
+    nisar_hh/hv.f16        latest NISAR GCOV pass, dB, [row][col]                                     only with Earthdata login
+    nisar_disp/coh.f16     NISAR GUNW chained motion + coherence, [epoch][row][col]                   only with Earthdata login
 ```
 
-Each `.f32` file holds raw little-endian float32 values. Row 0 is the northern edge and `NaN` means no data. The grid is regular in lon/lat over `bbox = [west, south, east, north]`.
+Each `.f16` file holds raw little-endian IEEE half-precision (float16) values; `manifest.dtype` says so, and older `float32` areas still load. Row 0 is the northern edge and `NaN` means no data. The grid is regular in lon/lat over `bbox = [west, south, east, north]`.
 
 Every layer in a manifest carries `observed: true` and a `source` key into `catalog.sources`; the app credits the source of every layer.
 

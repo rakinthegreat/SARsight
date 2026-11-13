@@ -91,6 +91,8 @@ export const UI = {
   job: ["Change work", "কাজ বদলান"],
   passes: ["Each dot is one satellite pass, 12 days apart", "প্রতিটি বিন্দু একটি স্যাটেলাইট পাস, ১২ দিন পরপর"],
   loading: ["Reading radar passes…", "রাডার তথ্য পড়া হচ্ছে…"],
+  loadingOf: ["Reading radar passes… {d} of {n}", "রাডার তথ্য পড়া হচ্ছে… {n}-এর মধ্যে {d}"],
+  moreData: ["More satellite data loading… {d} of {n}", "আরও স্যাটেলাইট তথ্য আসছে… {n}-এর মধ্যে {d}"],
   status: { ok: ["Good", "ভালো"], watch: ["Careful", "সতর্ক"], alert: ["Danger", "বিপদ"] } as Record<Status, T2>,
   noData: ["No data at your location yet. Nearest:", "আপনার এলাকায় এখনো তথ্য নেই। সবচেয়ে কাছে:"],
   prepTitle: ["No radar data here yet", "এখানে এখনো রাডার তথ্য নেই"],
