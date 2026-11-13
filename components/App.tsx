@@ -30,8 +30,6 @@ const REGION_NAMES_BN: Record<string, { name: string; place: string; country: st
   "rajshahi-barind": { name: "বরেন্দ্র কৃষিজমি", place: "রাজশাহী", country: "বাংলাদেশ" },
   "bay-of-bengal": { name: "চট্টগ্রাম উপকূল", place: "বঙ্গোপসাগর", country: "বাংলাদেশ" },
   "barapukuria": { name: "বড়পুকুরিয়া কয়লা খনি", place: "দিনাজপুর", country: "বাংলাদেশ" },
-  "bingham-canyon": { name: "বিংহাম ক্যানিয়ন পিট", place: "ইউটা", country: "যুক্তরাষ্ট্র" },
-  "lost-hills": { name: "লস্ট হিলস তেলক্ষেত্র", place: "ক্যালিফোর্নিয়া", country: "যুক্তরাষ্ট্র" },
   "sylhet-haor": { name: "সুনামগঞ্জ হাওর প্লাবন", place: "সিলেট", country: "বাংলাদেশ" },
   "dhaka": { name: "ঢাকা ভূমি অবনমন", place: "ঢাকা", country: "বাংলাদেশ" },
   "rangamati": { name: "পার্বত্য ঢাল", place: "রাঙ্গামাটি", country: "বাংলাদেশ" },

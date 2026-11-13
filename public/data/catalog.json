@@ -22,7 +22,8 @@
     24.61
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "bay-of-bengal",
@@ -45,7 +46,8 @@
     22.4
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "barapukuria",
@@ -68,53 +70,8 @@
     25.58
    ],
    "observed": true,
-   "nisarPasses": 24
-  },
-  {
-   "id": "bingham-canyon",
-   "name": "Bingham Canyon Pit",
-   "place": "Utah",
-   "country": "USA",
-   "scenario": "mine",
-   "modules": [
-    "econ",
-    "vis"
-   ],
-   "center": [
-    -112.15,
-    40.523
-   ],
-   "bbox": [
-    -112.18289,
-    40.498,
-    -112.11711,
-    40.548
-   ],
-   "observed": true,
-   "nisarPasses": 24
-  },
-  {
-   "id": "lost-hills",
-   "name": "Lost Hills Oil Field",
-   "place": "California",
-   "country": "USA",
-   "scenario": "extraction",
-   "modules": [
-    "econ",
-    "vis"
-   ],
-   "center": [
-    -119.72,
-    35.62
-   ],
-   "bbox": [
-    -119.80611,
-    35.55,
-    -119.63389,
-    35.69
-   ],
-   "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "sylhet-haor",
@@ -137,7 +94,8 @@
     25.25
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "dhaka",
@@ -160,7 +118,8 @@
     23.88
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "rangamati",
@@ -183,7 +142,8 @@
     22.69
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "kahramanmaras",
@@ -206,7 +166,8 @@
     37.725
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "campi-flegrei",
@@ -229,7 +190,8 @@
     40.89
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "mexico-city",
@@ -252,7 +214,8 @@
     19.6
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": true
   },
   {
    "id": "sindh",
@@ -275,7 +238,8 @@
     26.82
    ],
    "observed": true,
-   "nisarPasses": 24
+   "nisarPasses": 24,
+   "nisarData": false
   }
  ],
  "sources": {

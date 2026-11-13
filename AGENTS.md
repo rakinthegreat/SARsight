@@ -71,7 +71,7 @@ scripts/
 backend/app/
   main.py           FastAPI routes; prepare.py = on-demand area job queue
   aoi.py, store.py, pipeline/ (ASF search, HDF5→COG, InSAR processing), sim/
-data/regions.json   The 12 showcase regions
+data/regions.json   The 10 showcase regions
 public/data/        Built showcase data the app loads (committed)
 ```
 

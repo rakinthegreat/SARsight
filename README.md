@@ -49,8 +49,8 @@ Every region uses **real satellite observations only — nothing is simulated**,
 
 Ground-motion layers appear only where real interferograms exist. Each region's window is chosen so the motion
 covers the whole timeline: Kahramanmaraş spans the 2023 earthquake, Campi Flegrei and Mexico City run to autumn 2026,
-and the farm and coast regions end at the latest pass. Regions without an InSAR archive (Bingham Canyon) get motion
-from NISAR once you run the fetch with your Earthdata login.
+and the farm and coast regions end at the latest pass. Regions without an InSAR archive get motion from NISAR once
+you run the fetch with your Earthdata login.
 
 Refresh the data (no credentials needed, about 1 minute per region):
 
@@ -77,7 +77,7 @@ Regions and dates are defined in `data/regions.json`. See [DATA.md](DATA.md) for
 
 ## Any place, on demand
 
-The 12 regions are showcases. To analyse any other place, run the backend:
+The 10 regions are showcases. To analyse any other place, run the backend:
 
 ```
 cd backend

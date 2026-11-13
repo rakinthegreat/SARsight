@@ -39,30 +39,6 @@ export const STORIES: Record<string, Story> = {
       look: "মোশন (Motion) লেয়ারটি খুলুন এবং প্রতিটি পাসে খনির ওপরের মাটি কীভাবে নড়ে তা দেখুন।",
     },
   },
-  "bingham-canyon": {
-    what: "One of the world's largest open-pit mines. In 2013 its NE wall slid in a huge but predicted landslide; radar monitoring helped give the warning.",
-    radar: "Accelerating creep on a pit wall is the classic warning sign. Brightness change marks fresh rock faces and benches.",
-    nisar: "A free, regular, global record of pit-wall motion, useful for mines that cannot afford ground radar.",
-    look: "Draw an area on a pit wall and watch the surface change pass by pass.",
-    bn: {
-      what: "বিশ্বের বৃহত্তম উন্মুক্ত তামার খনিগুলোর একটি। ২০১৩ সালে এর উত্তর-পূর্ব দেয়াল এক বিশাল ভূমিধসে ধসে পড়েছিল; রাডার পর্যবেক্ষণের কারণেই পূর্ব সতর্কবার্তা দেওয়া সম্ভব হয়েছিল।",
-      radar: "খনি দেয়ালের স্থানচ্যুতির গতি বৃদ্ধি পাওয়া আসন্ন ধসের স্পষ্ট লক্ষণ। উজ্জ্বলতার পরিবর্তন উন্মুক্ত তাজা শিলা ও ধাপ নির্দেশ করে।",
-      nisar: "খনি দেয়াল নড়াচড়ার একটি নিয়মিত উন্মুক্ত বৈশ্বিক রেকর্ড, যা ব্যয়বহুল গ্রাউন্ড রাডার ব্যবহারে অক্ষম খনিগুলোর জন্য অত্যন্ত সহায়ক।",
-      look: "খনির একটি দেয়ালে একটি এলাকা আঁকুন এবং প্রতিটি পাসে উপরিভাগের পরিবর্তন দেখুন।",
-    },
-  },
-  "lost-hills": {
-    what: "Pumping oil and water from shallow reservoirs compacts the rock beneath this San Joaquin Valley oil field, and the surface sinks along the field's axis.",
-    radar: "InSAR maps the elongated subsidence trough. Brightness stays steady because the surface itself barely changes.",
-    nisar: "Routine subsidence maps let operators and regulators see well-casing and pipeline risk early.",
-    look: "Draw a Profile across the field to see the trough.",
-    bn: {
-      what: "অগভীর আধার থেকে তেল ও পানি তোলার কারণে এই তেলক্ষেত্রের নিচের শিলা সংকুচিত হয় এবং প্রধান অক্ষ বরাবর ভূপৃষ্ঠ দেবে যায়।",
-      radar: "ইনসার লম্বাটে অবনমন খাদটি নিখুঁতভাবে চিহ্নিত করে। ভূপৃষ্ঠ সামান্য পরিবর্তিত হওয়ায় উজ্জ্বলতা প্রায় অপরিবর্তিত থাকে।",
-      nisar: "নিয়মিত দেবে যাওয়ার মানচিত্র দিয়ে পরিচালনাকারী ও নিয়ন্ত্রক সংস্থা তেলকূপের পাইপলাইন ও কেসিংয়ের ঝুঁকি আগেভাগেই বুঝতে পারে।",
-      look: "তেলক্ষেত্রের ওপর দিয়ে একটি প্রোফাইল রেখা টানুন এবং দেবে যাওয়া খাদটি দেখুন।",
-    },
-  },
   "sylhet-haor": {
     what: "Haors are bowl-shaped wetlands that flood every monsoon. In June 2022 extreme rain upstream in Meghalaya caused the worst floods in about a century.",
     radar: "Calm open water reflects the radar away and looks black. Flooded trees and wetlands glow bright where waves bounce off water and trunks.",

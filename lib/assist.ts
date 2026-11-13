@@ -440,7 +440,7 @@ export const JUDGE = {
   nisar: ["NISAR at the core", "কেন্দ্রে নিসার"],
   nisarPts: [
     ["NISAR L-band radar measurements are built into the ready places", "তৈরি জায়গাগুলোতে নিসার এল-ব্যান্ড রাডার পরিমাপ আগেই যুক্ত"],
-    ["NISAR ground motion over time where the ground moves: sinking cities, volcanoes, mines", "যেখানে মাটি নড়ে সেখানে নিসারের মাটির গতিবিধি: ডুবে যাওয়া শহর, আগ্নেয়গিরি, খনি"],
+    ["NISAR ground motion over time in Mexico City, one of the fastest-sinking cities on Earth", "মেক্সিকো সিটিতে নিসারের মাটির গতিবিধি, পৃথিবীর দ্রুততম ডুবে যাওয়া শহরগুলোর একটি"],
     ["Sentinel-1, ALOS-2 and NASA POWER fill in the rest of the story", "সেন্টিনেল-১, অ্যালোস-২ ও নাসা পাওয়ার বাকি গল্প পূরণ করে"],
     ["Every source is credited under Data sources, NASA first", "প্রতিটি উৎস 'উপাত্তের উৎস'-এ দেওয়া আছে, নাসা আগে"],
   ],

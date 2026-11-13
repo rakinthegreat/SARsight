@@ -55,7 +55,7 @@ If the package is OPERA or ARIA data from Sentinel-1 rather than NISAR, these pr
 
 ## On-demand areas
 
-When someone draws or taps outside the 12 showcase regions, the app offers **Prepare this place** and calls `POST /api/areas`.
+When someone draws or taps outside the 10 showcase regions, the app offers **Prepare this place** and calls `POST /api/areas`.
 
 - **How a job runs:** the backend writes `data/custom/<id>/region.json`, then runs `scripts/fetch_real_data.py --custom` and `node scripts/build-data.mjs --custom <id>` in a background queue, one job at a time.
 - **Size of an area:** at least 0.06° (about 70 m cells) and at most 1°. Dates default to the last 150 days.

@@ -26,7 +26,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fetch_real_data import SOURCES, fetch_nisar_science, nisar_catalogue  # noqa: E402
 
-MOTION = {"campi-flegrei", "bingham-canyon", "lost-hills", "mexico-city"}
+MOTION = {"campi-flegrei", "mexico-city"}
 DATA = Path(__file__).resolve().parents[1] / "public" / "data"
 LABELS = {"nisar_hh": "NISAR L-band HH", "nisar_hv": "NISAR L-band HV", "nisar_disp": "NISAR ground motion (cumulative)",
           "nisar_coh": "NISAR coherence (12-day pair)", "deformation": "Ground motion, NISAR L-band InSAR", "coherence": "Coherence, NISAR L-band InSAR"}
