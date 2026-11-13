@@ -51,7 +51,7 @@ function buildRegion(r, realDir, dir) {
     ...(meta.event ? { event: { ...meta.event, epoch: eventEpoch } } : {}), layers, features: feats,
     ...(places ? { places: true } : {}), drivers: meta.drivers ?? null, quakes: meta.quakes ?? [], nisar: meta.nisar ?? [] };
   writeFileSync(join(dir, "manifest.json"), JSON.stringify(manifest));
-  return { ...entry, nisarPasses: (meta.nisar ?? []).length };
+  return { ...entry, nisarPasses: (meta.nisar ?? []).length, nisarData: layers.some((l) => l.source === "asf") };
 }
 
 // on-demand area: node scripts/build-data.mjs --custom <id>   (data/custom/<id>/{region.json, real/} -> site/)

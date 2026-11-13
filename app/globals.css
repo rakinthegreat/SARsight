@@ -599,6 +599,7 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 .prep-pill > b { flex: 1; }
 .pill-sym { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; color: var(--bg); background: var(--ok); flex: none; }
 .prep-pill.alert .pill-sym { background: var(--alert); }
+.prep-pill.watch { border-color: var(--watch); } .prep-pill.watch .pill-sym { background: var(--watch); }
 @media (max-width: 900px) { .prep-pill { left: 16px; bottom: calc(92px + env(safe-area-inset-bottom, 0px)); } }
 .chips.tight { padding-top: 0; }
 .notice.partial { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -830,3 +831,16 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
   .top-right .pill:not(.lang) { width: 34px; height: 34px; }
   .top-right .pill.lang { padding: 6px 12px; }
 }
+
+/* ---------- judges' tour (reuses the onboarding stage) ---------- */
+.judge-btn { border-color: var(--accent); color: var(--accent); }
+.judge-btn .pill-icon { color: var(--accent); }
+.judge-invite { color: var(--accent); margin: 0; }
+.judge-mods { display: grid; gap: 10px; width: 100%; max-width: 480px; text-align: left; }
+.judge-mod { display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--r); background: #ffffff08; animation: rise .5s cubic-bezier(.2,.8,.2,1) backwards; }
+.judge-mod svg { flex: none; color: var(--accent); margin-top: 2px; }
+.judge-mod > span { display: grid; gap: 4px; } .judge-mod b { font-size: 17px; } .judge-mod > span > span { color: var(--dim); line-height: 1.4; }
+.judge-places { max-height: 46vh; }
+.judge-places button { width: 100%; }
+.judge-tag { margin-left: auto; padding: 3px 8px; border-radius: 99px; background: var(--accent); color: var(--bg); font-size: 11px; font-weight: 700; letter-spacing: .06em; flex: none; }
+.onb-p.small { font-size: 14px; }

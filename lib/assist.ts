@@ -94,7 +94,7 @@ export const UI = {
   status: { ok: ["Good", "ভালো"], watch: ["Careful", "সতর্ক"], alert: ["Danger", "বিপদ"] } as Record<Status, T2>,
   noData: ["No data at your location yet. Nearest:", "আপনার এলাকায় এখনো তথ্য নেই। সবচেয়ে কাছে:"],
   prepTitle: ["No radar data here yet", "এখানে এখনো রাডার তথ্য নেই"],
-  prepBody: ["We can prepare this place from free satellite radar, including NASA's NISAR. It takes 2–3 minutes.", "নাসার নিসারসহ বিনামূল্যের স্যাটেলাইট রাডার থেকে এই জায়গার তথ্য তৈরি করা যায়। ২–৩ মিনিট লাগবে।"],
+  prepBody: ["We can prepare this place from free satellite radar. It opens in about a minute; NASA's NISAR radar is added a minute or two later.", "বিনামূল্যের স্যাটেলাইট রাডার থেকে এই জায়গার তথ্য তৈরি করা যায়। প্রায় এক মিনিটে খুলবে; নাসার নিসার রাডার যোগ হবে আরও এক-দুই মিনিট পরে।"],
   prepGo: ["Prepare this place", "তথ্য তৈরি করুন"],
   prepWait: ["Preparing your place…", "আপনার জায়গার তথ্য তৈরি হচ্ছে…"],
   prepFail: ["Could not prepare this place", "তথ্য তৈরি করা যায়নি"],
@@ -104,6 +104,9 @@ export const UI = {
   offline: ["The area service is offline.", "সার্ভার এখন বন্ধ।"],
   prepBg: ["Keeps going if you switch tabs", "অন্য ট্যাবে গেলেও চলতে থাকবে"],
   prepReady: ["Your place is ready", "আপনার জায়গার তথ্য তৈরি"],
+  nisarAdding: ["Adding NASA NISAR…", "নাসার নিসার যোগ হচ্ছে…"],
+  nisarAdded: ["NASA NISAR radar added", "নাসার নিসার রাডার যোগ হয়েছে"],
+  nisarNone: ["NISAR has not passed over this place yet", "নিসার এখনো এই জায়গার উপর দিয়ে যায়নি"],
   prepLost: ["The area service restarted. Please try again.", "সার্ভার আবার চালু হয়েছে। আবার চেষ্টা করুন।"],
   prepBusy: ["Another place is being prepared. Please wait for it to finish.", "আরেকটি জায়গার তথ্য তৈরি হচ্ছে। শেষ হওয়া পর্যন্ত অপেক্ষা করুন।"],
   open: ["Open", "খুলুন"],
@@ -412,6 +415,7 @@ const PREP_STAGES: Record<string, [T2, number]> = {
   "Checking NISAR passes": [["Checking NASA NISAR passes", "নাসার নিসার পাস দেখা হচ্ছে"], 66],
   "Reading NISAR L-band radar": [["Reading NASA NISAR radar", "নাসার নিসার রাডার পড়া হচ্ছে"], 74],
   "Building layers": [["Building your map", "মানচিত্র তৈরি হচ্ছে"], 94],
+  "Saving NISAR layers": [["Saving NASA NISAR layers", "নাসার নিসার লেয়ার রাখা হচ্ছে"], 90],
   "Ready": [["Ready", "তৈরি"], 100],
 };
 
@@ -420,3 +424,38 @@ export function prepProgress(stage: string | undefined, position: number | undef
   const [label, pct] = PREP_STAGES[stage ?? ""] ?? [[stage ?? "", stage ?? ""], 40];
   return { text: tr(label, lang), pct };
 }
+
+/** Guided tour for NASA Space Apps judges (open with the header button or ?judge). */
+export const JUDGE = {
+  button: ["For judges", "বিচারকদের জন্য"],
+  invite: ["Judging? Take the 1-minute tour", "বিচারক? ১ মিনিটের পরিচিতি দেখুন"],
+  eyebrow: ["NASA Space Apps 2026 · Dancing with the SARs", "নাসা স্পেস অ্যাপস ২০২৬ · ড্যান্সিং উইথ দ্য SARs"],
+  hello: ["Welcome, judges", "স্বাগতম, বিচারকগণ"],
+  helloSub: ["SARsight turns NASA-ISRO NISAR radar into plain answers that farmers, fishers and families can act on, plus a full research globe for experts.", "SARsight নাসা-ইসরোর নিসার রাডারকে সহজ উত্তরে বদলায়, যা কৃষক, জেলে ও পরিবার কাজে লাগাতে পারে; আর বিশেষজ্ঞদের জন্য আছে পূর্ণ গবেষণা গ্লোব।"],
+  three: ["One radar, three audiences", "এক রাডার, তিন ধরনের ব্যবহারকারী"],
+  econ: ["Farmers, fishers and mine workers get one colour, one sentence and two pictures, read aloud in Bangla.", "কৃষক, জেলে ও খনিশ্রমিক পান একটি রং, একটি বাক্য আর দুটি ছবি, বাংলায় পড়ে শোনানো হয়।"],
+  haz: ["Residents ask one question: is my home safe, and what should I do?", "বাসিন্দারা জানতে পারেন: আমার বাড়ি কি নিরাপদ, আমার কী করা উচিত?"],
+  vis: ["Researchers get every layer on a 4D globe: time slider, swipe, profiles and sources.", "গবেষকরা পান ৪ডি গ্লোবে সব লেয়ার: সময় স্লাইডার, তুলনা, প্রোফাইল ও উৎস।"],
+  nisarEyebrow: ["Real data · nothing simulated", "বাস্তব উপাত্ত · কিছুই সিমুলেটেড নয়"],
+  nisar: ["NISAR at the core", "কেন্দ্রে নিসার"],
+  nisarPts: [
+    ["NISAR L-band radar measurements are built into the ready places", "তৈরি জায়গাগুলোতে নিসার এল-ব্যান্ড রাডার পরিমাপ আগেই যুক্ত"],
+    ["NISAR ground motion over time where the ground moves: sinking cities, volcanoes, mines", "যেখানে মাটি নড়ে সেখানে নিসারের মাটির গতিবিধি: ডুবে যাওয়া শহর, আগ্নেয়গিরি, খনি"],
+    ["Sentinel-1, ALOS-2 and NASA POWER fill in the rest of the story", "সেন্টিনেল-১, অ্যালোস-২ ও নাসা পাওয়ার বাকি গল্প পূরণ করে"],
+    ["Every source is credited under Data sources, NASA first", "প্রতিটি উৎস 'উপাত্তের উৎস'-এ দেওয়া আছে, নাসা আগে"],
+  ],
+  try: ["Try it instantly", "এখনই দেখুন"],
+  trySub: ["These places are ready and open straight away. No waiting.", "এই জায়গাগুলো তৈরি, সঙ্গে সঙ্গে খোলে। অপেক্ষা নেই।"],
+  nisarTag: ["NISAR", "নিসার"],
+  anyEyebrow: ["Build your own", "নিজের জায়গা তৈরি করুন"],
+  any: ["Or anywhere on Earth", "অথবা পৃথিবীর যেকোনো জায়গা"],
+  anyPts: [
+    ["Search a town or draw an area", "শহরের নাম খুঁজুন বা এলাকা আঁকুন"],
+    ["It opens in about a minute, built from free satellite data", "বিনামূল্যের স্যাটেলাইট তথ্য থেকে প্রায় এক মিনিটে খোলে"],
+    ["NASA NISAR radar is added 1–2 minutes later, in the background. Keep exploring meanwhile", "নাসার নিসার রাডার ১–২ মিনিট পরে পেছনে যোগ হয়। এর মধ্যে ঘুরে দেখুন"],
+  ],
+  short: ["Short on time? Stick to the ready places: everything is already there.", "সময় কম? তৈরি জায়গাগুলো দেখুন: সব আগেই আছে।"],
+  server: ["New places need our area server. If it is offline, the ready places still work fully.", "নতুন জায়গার জন্য আমাদের সার্ভার লাগে। সেটি বন্ধ থাকলেও তৈরি জায়গাগুলো পুরোপুরি কাজ করে।"],
+  seeReady: ["See ready places", "তৈরি জায়গাগুলো দেখুন"],
+  explore: ["Start exploring", "ঘুরে দেখা শুরু করুন"],
+} satisfies Record<string, T2 | T2[]>;

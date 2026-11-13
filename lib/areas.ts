@@ -5,7 +5,9 @@ import type { CatalogEntry, LonLat, Scenario, Source } from "./data/types";
 export const API = (process.env.NEXT_PUBLIC_API ?? "http://localhost:8000").replace(/\/$/, "");
 const KEY = "sarsight.areas.v1";
 
-export interface AreaJob { id: string; state: "queued" | "running" | "done" | "failed" | "unknown"; stage?: string; error?: string; position?: number; entry?: CatalogEntry & { sources?: Record<string, Source> } }
+/** Second build step: the latest NISAR scan, added after the area is already usable. */
+export interface NisarStep { state: "running" | "done" | "none" | "failed"; stage?: string; pct?: number; layers?: string[] }
+export interface AreaJob { id: string; state: "queued" | "running" | "done" | "failed" | "unknown"; stage?: string; error?: string; position?: number; entry?: CatalogEntry & { sources?: Record<string, Source> }; nisar?: NisarStep }
 
 const withBase = (e: CatalogEntry): CatalogEntry => ({ ...e, custom: true, base: `${API}/areas/${e.id}/site` });
 

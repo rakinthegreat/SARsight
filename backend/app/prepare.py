@@ -5,7 +5,9 @@ ALOS-2, NASA POWER, USGS, ASF NISAR catalogue; real NISAR layers too when Earthd
 
 Each area lives in data/custom/<id>/:  region.json (config)  real/ (fetched)  site/ (what the app loads)  log.txt
 Jobs run one at a time in a background thread, as two subprocesses: scripts/fetch_real_data.py --custom, then
-node scripts/build-data.mjs --custom.
+node scripts/build-data.mjs --custom. The area is usable as soon as that finishes (about a minute). With
+SARSIGHT_CUSTOM_NISAR=1 and an Earthdata login, a second step then adds the latest NISAR scan to the built site
+(scripts/add_nisar.py --dir, about 1.5 min) in its own thread; status()["nisar"] reports its progress.
 """
 from __future__ import annotations
 
@@ -21,6 +23,8 @@ import threading
 from datetime import date, timedelta
 from pathlib import Path
 
+from .pipeline import ingest
+
 ROOT = Path(__file__).resolve().parents[2]
 CUSTOM = ROOT / "data" / "custom"
 SCENARIOS = {"agriculture", "marine", "mine", "extraction", "earthquake", "flood", "subsidence", "landslide", "volcano"}
@@ -33,10 +37,13 @@ STAGES = [
     ("lband_hh", "Reading L-band, elevation and land cover"),
     ("water_occurrence", "Reading 38 years of water history"),
     ("NISAR passes", "Checking NISAR passes"),
-    ("NISAR GCOV", "Reading NISAR L-band radar"),
     ("Building layers", "Building layers"),
     ("done in", "Building layers"),
 ]
+
+# second step: (marker in add_nisar.py output, stage, percent)
+NISAR_STAGES = [("== ", "Checking NISAR passes", 10), ("NISAR GCOV", "Reading NISAR L-band radar", 30),
+                ("nisar_hh", "Reading NISAR L-band radar", 65), ("nisar_hv", "Saving NISAR layers", 90)]
 
 _jobs: dict[str, dict] = {}
 _queue: "queue.Queue[str]" = queue.Queue()
@@ -102,7 +109,7 @@ def status(rid: str) -> dict:
         job = dict(_jobs.get(rid, {}))
     e = entry(rid)
     if e and job.get("state") not in ("queued", "running"):
-        return {"id": rid, "state": "done", "entry": e}
+        return {"id": rid, "state": "done", "entry": e, **({"nisar": job["nisar"]} if "nisar" in job else {})}
     if not job:
         return {"id": rid, "state": "unknown"}
     job.pop("proc", None)
@@ -138,13 +145,8 @@ def _run(rid: str):
     log = (d / "log.txt").open("w", encoding="utf8")
     try:
         _set(rid, state="running", stage=STAGES[0][1])
-        env = dict(os.environ)
-        # On-demand custom areas build in ~30s with real Sentinel-1, DEM, WorldCover and Water History.
-        # Skip heavy multi-gigabyte NISAR HDF5 streaming unless explicitly enabled by SARSIGHT_CUSTOM_NISAR=1.
-        if os.environ.get("SARSIGHT_CUSTOM_NISAR") != "1":
-            env["SARSIGHT_SKIP_NISAR"] = "1"
-        else:  # latest NISAR scan only (~2 min); chaining motion pairs would take far longer than a user will wait
-            env.setdefault("SARSIGHT_NISAR_MOTION", "0")
+        # first step builds without NISAR so the area opens in about a minute; NISAR is added afterwards
+        env = {**os.environ, "SARSIGHT_SKIP_NISAR": "1"}
         p = subprocess.Popen([sys.executable, "-u", str(ROOT / "scripts" / "fetch_real_data.py"), "--custom", str(d / "region.json")],
                              cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf8", errors="replace")
         for line in p.stdout:  # type: ignore[union-attr]
@@ -162,11 +164,37 @@ def _run(rid: str):
         log.write(b.stdout + b.stderr)
         if b.returncode != 0:
             raise RuntimeError((b.stderr or b.stdout).strip().splitlines()[-1] if (b.stderr or b.stdout).strip() else "build failed")
-        _set(rid, state="done", stage="Ready")
+        nisar = os.environ.get("SARSIGHT_CUSTOM_NISAR") == "1" and ingest.live()
+        _set(rid, state="done", stage="Ready", **({"nisar": {"state": "running", "stage": "Checking NISAR passes", "pct": 5}} if nisar else {}))
+        if nisar:
+            threading.Thread(target=_add_nisar, args=(rid,), daemon=True, name=f"nisar-{rid}").start()
     except Exception as e:  # report the reason to the app; the log keeps the full output
         _set(rid, state="failed", stage="Failed", error=_friendly(str(e)))
     finally:
         log.close()
+
+
+def _add_nisar(rid: str):
+    """Second step: latest NISAR scan into the already-built site. Never breaks the area; failures only skip NISAR."""
+    d = CUSTOM / rid
+    env = {**os.environ, "SARSIGHT_NISAR_MOTION": "0"}  # chaining motion pairs would take far longer than anyone waits
+    env.pop("SARSIGHT_SKIP_NISAR", None)
+    added: list[str] = []
+    try:
+        with (d / "log.txt").open("a", encoding="utf8") as log:
+            p = subprocess.Popen([sys.executable, "-u", str(ROOT / "scripts" / "add_nisar.py"), "--dir", str(d / "site")], cwd=ROOT, env=env,
+                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf8", errors="replace")
+            for line in p.stdout:  # type: ignore[union-attr]
+                log.write(line); log.flush()
+                for marker, stage, pct in NISAR_STAGES:
+                    if marker in line:
+                        _set(rid, nisar={"state": "running", "stage": stage, "pct": pct})
+                if "added:" in line:
+                    added = [x.strip() for x in line.split("added:", 1)[1].split(",") if x.strip().startswith("nisar")]
+            ok = p.wait() == 0
+        _set(rid, nisar={"state": ("done" if added else "none") if ok else "failed", "layers": added, "pct": 100})
+    except Exception as e:  # noqa: BLE001
+        _set(rid, nisar={"state": "failed", "error": str(e)[-200:], "pct": 100})
 
 
 def _tail(d: Path) -> str:

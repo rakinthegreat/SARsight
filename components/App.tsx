@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogEntry, LonLat, ModuleId, NisarPass, RegionData, Source } from "../lib/data/types";
-import { loadCatalog, loadRegion } from "../lib/data/provider";
+import { forgetRegion, loadCatalog, loadRegion } from "../lib/data/provider";
 import { LANDCOVER, LANDCOVER_BN, WATER_COLORS, gradientCss, viewDef, viewRange, viewsFor, type ViewId } from "../lib/views";
 import { INDICATOR_LABELS_BN, INDICATOR_WORDS_BN, crop, fmtLL, moistureIndex, nextPassSchedule, pointInPolygon, polygonMask, regionIndicators, report, transect, type Indicator, type Report, type Status } from "../lib/analysis";
 import { STORIES } from "../lib/stories";
@@ -11,10 +11,11 @@ import RegionMap, { type DrawMode } from "./RegionMap";
 import Scrubber from "./Scrubber";
 import Chart from "./Chart";
 import Assist, { type Step } from "./Assist";
-import { HOME, JOBS, ONBOARD, UI, getStoredProfile, num, prepProgress, squareAround, tr, useProfile } from "../lib/assist";
+import { HOME, JOBS, JUDGE, ONBOARD, UI, getStoredProfile, num, prepProgress, squareAround, tr, useProfile } from "../lib/assist";
 import Onboarding, { ONBOARDED, type OnboardChoice, type OnboardProgress } from "./Onboarding";
+import JudgeTour from "./JudgeTour";
 import PlaceSearch from "./PlaceSearch";
-import { areaStatus, rememberArea, removeSavedArea, requestArea, savedAreas, serverAreas, type AreaJob } from "../lib/areas";
+import { areaStatus, rememberArea, removeSavedArea, requestArea, savedAreas, serverAreas, type AreaJob, type NisarStep } from "../lib/areas";
 import type { Scenario } from "../lib/data/types";
 
 const Globe = dynamic(() => import("./Globe"), { ssr: false, loading: () => <div className="globe-loading mono">Loading globe…</div> });
@@ -135,6 +136,10 @@ function AppContent() {
   const [showSources, setShowSources] = useState(false);
   const pending = useRef<LonLat[] | null>(null);
   const [onboard, setOnboard] = useState(false);
+  const [judge, setJudge] = useState(false);
+  useEffect(() => { if (/[?&#]judge\b/.test(location.search + location.hash)) { setJudge(true); try { localStorage.setItem(ONBOARDED, "1"); } catch { /* storage unavailable */ } } }, []);
+  const openJudge = () => { setOnboard(false); setJudge(true); };
+  const judgePick = (id: string) => { setJudge(false); setSiteId(null); setAdding(false); setModule("vis"); setSelected(id); };
   const onbFrom = useRef<{ ll: LonLat; pool: CatalogEntry[] } | null>(null);
   const [onbFallback, setOnbFallback] = useState(false);
   useEffect(() => { // first visit with no saved places: show the onboarding
@@ -287,6 +292,7 @@ function AppContent() {
           setCustoms((c) => [...c.filter((x) => x.id !== e.id), e]);
           if (src) setSources((s) => ({ ...src, ...s }));
           setBg((b) => b && { ...b, job: j, ready: e });
+          if (j.nisar?.state === "running") setAddon({ id: e.id, step: j.nisar });
           return;
         }
         const err = j.state === "failed" ? j.error ?? "failed" : j.state === "unknown" ? tr(UI.prepLost, lang) : undefined;
@@ -302,6 +308,36 @@ function AppContent() {
     return () => { alive = false; clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bgId, bgState]);
+  /** Second build step: NASA NISAR being added to an area that is already open. */
+  const [addon, setAddon] = useState<{ id: string; step: NisarStep } | null>(null);
+  const addonId = addon?.id, addonRunning = addon?.step.state === "running";
+  useEffect(() => {
+    if (!addonId || !addonRunning) return;
+    let alive = true, timer: ReturnType<typeof setTimeout>;
+    const tick = async () => {
+      try {
+        const step = (await areaStatus(addonId)).nisar;
+        if (!alive) return;
+        if (!step) { setAddon(null); return; } // backend restarted: nothing more is coming
+        setAddon({ id: addonId, step });
+        if (step.state === "running") { timer = setTimeout(tick, 3000); return; }
+        if (step.state === "done") {
+          forgetRegion(addonId);
+          const base = catalog.find((c) => c.id === addonId)?.base;
+          if (region?.manifest.id === addonId) loadRegion(addonId, base).then((r) => alive && setRegion((cur) => (cur?.manifest.id === addonId ? r : cur))).catch(() => {});
+        }
+      } catch { if (alive) timer = setTimeout(tick, 5000); }
+    };
+    timer = setTimeout(tick, 2000);
+    return () => { alive = false; clearTimeout(timer); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addonId, addonRunning]);
+  useEffect(() => { // finished: leave the result up for a few seconds
+    if (!addon || addon.step.state === "running") return;
+    const t = setTimeout(() => setAddon(null), 8000);
+    return () => clearTimeout(t);
+  }, [addon]);
+
   /** Open a finished area: in EconAssist / HazAssist it becomes a saved site; in VisAssist the drawn shape is analysed. */
   const openArea = (e: CatalogEntry, poly: LonLat[]) => {
     const m = e.modules.includes(module) ? module : e.modules[0];
@@ -446,6 +482,7 @@ function AppContent() {
               {theme === "dark" ? tr(UI.themeLight, lang) : tr(UI.themeDark, lang)}
             </span>
           </button>
+          <button className="pill judge-btn" onClick={openJudge} aria-label={tr(JUDGE.button, lang)} title={tr(JUDGE.button, lang)}><span className="pill-icon">★</span><span className="pill-text">{tr(JUDGE.button, lang)}</span></button>
           <button className="pill" onClick={() => setOnboard(true)} aria-label={tr(ONBOARD.replay, lang)} title={tr(ONBOARD.replay, lang)}><span className="pill-icon">?</span><span className="pill-text">{tr(ONBOARD.replay, lang)}</span></button>
           <button className="pill mono" onClick={() => setShowSources(true)} aria-label={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"} title={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"}><span className="pill-icon">i</span><span className="pill-text">{lang === "bn" ? "উপাত্তের উৎস" : "DATA SOURCES"}</span></button>
         </div>
@@ -653,9 +690,11 @@ function AppContent() {
 
       {bg && !prep?.watching && <PrepPill bg={bg} lang={lang} onShow={() => setPrep({ poly: bg.poly, watching: true })}
         onOpen={() => bg.ready && openArea(bg.ready, bg.poly)} onDismiss={() => setBg(null)} />}
+      {!bg && addon && <NisarPill step={addon.step} lang={lang} onDismiss={() => setAddon(null)} />}
 
       {showSources && <SourcesSheet sources={sources} onClose={() => setShowSources(false)} lang={lang} />}
-      {onboard && <Onboarding lang={lang} setLang={prof.setLang} catalog={catalog} progress={onbProgress} onPlace={onboardPlace} onDone={finishOnboard} />}
+      {onboard && !judge && <Onboarding lang={lang} setLang={prof.setLang} catalog={catalog} progress={onbProgress} onPlace={onboardPlace} onDone={finishOnboard} onJudge={() => { finishOnboard(); openJudge(); }} />}
+      {judge && <JudgeTour lang={lang} setLang={prof.setLang} catalog={catalog} onPick={judgePick} onClose={() => setJudge(false)} />}
     </div>
   );
 }
@@ -709,6 +748,25 @@ function PrepareCard({ job, error, busy, lang, pickScenario, scenario, onScenari
           )}
           <button className="action" onClick={onGo} disabled={busy}><Icon name="sat" />{error ? L(UI.retry) : L(UI.prepGo)}</button>
         </>
+      )}
+    </div>
+  );
+}
+
+function NisarPill({ step, lang, onDismiss }: { step: NisarStep; lang: "en" | "bn"; onDismiss: () => void }) {
+  const L = (x: [string, string]) => tr(x, lang), pct = step.pct ?? 5;
+  if (step.state === "failed") return null;
+  return (
+    <div className={`prep-pill ${step.state === "done" ? "ok" : step.state === "none" ? "watch" : "busy"}`} role="status">
+      {step.state === "running" ? (
+        <div className="pill-main">
+          <span className="pill-row"><b>{L(UI.nisarAdding)}</b><b className="mono">{num(`${pct}%`, lang)}</b></span>
+          <ProgressBar pct={pct} />
+          <span className="small mono dim">{prepProgress(step.stage, undefined, lang).text}</span>
+        </div>
+      ) : (
+        <><span className="pill-sym" aria-hidden>{step.state === "done" ? "✓" : "!"}</span><b>{L(step.state === "done" ? UI.nisarAdded : UI.nisarNone)}</b>
+          <button className="iconbtn small" onClick={onDismiss} aria-label={L(UI.cancel)}><Icon name="close" size={16} /></button></>
       )}
     </div>
   );

@@ -3,7 +3,7 @@
 // can be fetched in the background while the remaining slides explain NISAR and what SARsight does with it.
 import { useEffect, useState } from "react";
 import type { CatalogEntry, LonLat, ModuleId } from "../lib/data/types";
-import { JOBS, ONBOARD as O, PERSONA, tr, type Job, type Lang, type Persona } from "../lib/assist";
+import { JOBS, JUDGE, ONBOARD as O, PERSONA, tr, type Job, type Lang, type Persona } from "../lib/assist";
 import type { Status } from "../lib/analysis";
 import Icon, { scenarioIcon } from "./Icon";
 import PlaceSearch from "./PlaceSearch";
@@ -19,7 +19,7 @@ const personaModule = (p: Persona): ModuleId => (p === "safe" ? "haz" : p === "s
 
 export default function Onboarding(p: {
   lang: Lang; setLang: (l: Lang) => void; catalog: CatalogEntry[];
-  progress: OnboardProgress; onPlace: (c: OnboardChoice) => void; onDone: () => void;
+  progress: OnboardProgress; onPlace: (c: OnboardChoice) => void; onDone: () => void; onJudge: () => void;
 }) {
   const { lang } = p;
   const L = (s: [string, string]) => tr(s, lang);
@@ -72,6 +72,7 @@ export default function Onboarding(p: {
             </div>
           </div>
           <button className="action big onb-cta" onClick={() => go(1)}>{L(O.start)}<Icon name="back" size={20} className="flip" /></button>
+          <button className="linkbtn judge-invite" onClick={p.onJudge}>★ {L(JUDGE.invite)}</button>
         </>)}
 
         {step === "who" && (<>
@@ -183,7 +184,7 @@ function Earth({ r = 70 }: { r?: number }) {
   </>);
 }
 
-function Orbit() {
+export function Orbit() {
   return (
     <svg className="onb-art" viewBox="-130 -110 260 220" aria-hidden>
       <Earth />
@@ -206,7 +207,7 @@ function Sat() {
   </g>);
 }
 
-function Radar() {
+export function Radar() {
   return (
     <svg className="onb-art" viewBox="-130 -110 260 220" aria-hidden>
       <g transform="translate(0 26)"><Earth r={62} /></g>

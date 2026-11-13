@@ -20,6 +20,8 @@ export interface CatalogEntry {
   bbox: [number, number, number, number]; // west, south, east, north
   observed: boolean;
   nisarPasses?: number;
+  /** real NISAR measurement layers are built in (not just the pass list) */
+  nisarData?: boolean;
   /** on-demand area built by the backend; its files are served from `base` */
   custom?: boolean;
   base?: string;

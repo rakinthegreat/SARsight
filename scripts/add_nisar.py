@@ -10,6 +10,7 @@ Motion pairs are slow (one 2.3 GB file per 12 days), so they are only read for M
 is the story; every other region gets the latest scan only.
 
 Usage (from repo root):  backend/.venv/bin/python scripts/add_nisar.py [region-id ...]
+                         backend/.venv/bin/python scripts/add_nisar.py --dir data/custom/<id>/site   (on-demand area)
 """
 from __future__ import annotations
 
@@ -31,8 +32,8 @@ LABELS = {"nisar_hh": "NISAR L-band HH", "nisar_hv": "NISAR L-band HV", "nisar_d
           "nisar_coh": "NISAR coherence (12-day pair)", "deformation": "Ground motion, NISAR L-band InSAR", "coherence": "Coherence, NISAR L-band InSAR"}
 
 
-def add(rid: str) -> dict:
-    d = DATA / rid
+def add(rid: str, d: Path | None = None) -> dict:
+    d = d or DATA / rid
     m = json.loads((d / "manifest.json").read_text(encoding="utf8"))
     bbox, dates = m["bbox"], m["epochs"]
     print(f"== {rid}  {dates[0]} .. {dates[-1]}")
@@ -55,10 +56,10 @@ def add(rid: str) -> dict:
         m["layers"] = [L for L in m["layers"] if L["id"] != lid] + [layer]
     (d / "manifest.json").write_text(json.dumps(m, ensure_ascii=False, separators=(",", ":")), encoding="utf8")
     print(f"    added: {', '.join(science) or 'nothing (no usable NISAR coverage)'}")
-    return {"passes": len(m.get("nisar", [])), "layers": sorted(science)}
+    return {"passes": len(m.get("nisar", [])), "layers": sorted(science), "data": any(L["source"] == "asf" for L in m["layers"])}
 
 
-def save_catalog(rid: str, passes: int):
+def save_catalog(rid: str, passes: int, has_data: bool):
     """Several copies of this script may run at once (one per region): update the shared catalog under a file lock."""
     path = DATA / "catalog.json"
     with open(path, "a") as lock:  # lock the catalog itself; "a" does not truncate it
@@ -66,19 +67,23 @@ def save_catalog(rid: str, passes: int):
         cat = json.loads(path.read_text(encoding="utf8"))
         for entry in cat["regions"]:
             if entry["id"] == rid:
-                entry["nisarPasses"] = passes
+                entry["nisarPasses"], entry["nisarData"] = passes, has_data
         cat["sources"]["asf"] = SOURCES["asf"]
         path.write_text(json.dumps(cat, ensure_ascii=False, indent=1), encoding="utf8")
 
 
 if __name__ == "__main__":
+    if len(sys.argv) == 3 and sys.argv[1] == "--dir":  # one built site, e.g. an on-demand area (no catalog to update)
+        site = Path(sys.argv[2]).resolve()
+        add(site.parent.name, site)
+        sys.exit(0)
     ids = sys.argv[1:] or [e["id"] for e in json.loads((DATA / "catalog.json").read_text(encoding="utf8"))["regions"]]
     summary = {}
     for rid in ids:
         t0 = time.time()
         try:
             summary[rid] = res = add(rid)
-            save_catalog(rid, res["passes"])
+            save_catalog(rid, res["passes"], res["data"])
         except Exception as e:
             print(f"!! {rid} failed: {type(e).__name__}: {e}")
             summary[rid] = {"error": str(e)}
