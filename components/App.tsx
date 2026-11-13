@@ -494,6 +494,7 @@ function AppContent() {
           <Assist lang={lang} module={module} step={step} job={prof.job} onJob={(j) => { prof.setJob(j); setSiteId(null); if (j) setSelected(null); }}
             list={assistList} onChoose={choose} onLocate={locate} onPlace={placePin} entry={entry} region={region} t={t} setT={setT}
             site={site && edit && polygon ? { ...site, poly: polygon } : site} sites={sites} onSite={(id) => { setEdit(null); setSiteId(id); setAdding(false); }}
+            crossSites={module === "econ" ? prof.sites.haz.filter((s) => assistList.some((c) => c.id === s.region)) : module === "haz" ? prof.sites.econ.filter((s) => assistList.some((c) => c.id === s.region)) : []}
             onEdit={startEdit} editing={!!edit} onMap={() => { setMapOpen(true); setStage("map"); setFitTick((x) => x + 1); }} onRename={(name) => site && prof.updateSite(module, site.id, { name })}
             onAdd={() => { setAdding(true); setMode(null); setSelected(null); }}
             onRemove={(id) => { prof.removeSite(module, id); setSiteId(null); setPolygon(null); setPolyName(null); if (sites.length <= 1) setSelected(null); }}
@@ -528,6 +529,31 @@ function AppContent() {
                 </ul>
               </div>
             )}
+            {(() => {
+              const allSaved = [...prof.sites.econ, ...prof.sites.haz].filter(
+                (s, i, arr) => arr.findIndex((x) => x.id === s.id) === i && catalog.some((c) => c.id === s.region)
+              );
+              if (!allSaved.length) return null;
+              return (
+                <div className="saved-places">
+                  <div className="eyebrow mono">{lang === "bn" ? "সংরক্ষিত জায়গা" : "My saved places"}</div>
+                  <ul>
+                    {allSaved.map((s) => {
+                      const cat = catalog.find((c) => c.id === s.region)!;
+                      return (
+                        <li key={s.id}>
+                          <button onClick={() => { choose(s.region); setPolygon(s.poly); setPolyName(s.name); }}>
+                            <Icon name={scenarioIcon[cat.scenario]} size={20} />
+                            <b>{s.name}</b>
+                            <span className="mono dim">{rName(cat, lang)}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })()}
             <ul className="regions">
               {list.map((r) => (
                 <li key={r.id}>

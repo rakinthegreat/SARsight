@@ -19,6 +19,7 @@ export default function Assist(p: {
   list: CatalogEntry[]; onChoose: (id: string) => void; onLocate: () => void; onPlace: (ll: LonLat) => void;
   entry: CatalogEntry | null; region: RegionData | null; t: number; setT: (t: number) => void;
   site: Site | null; sites: Site[]; onSite: (id: string) => void; onAdd: () => void; onRemove: (id: string) => void;
+  crossSites?: Site[];
   onEdit: () => void; onRename: (name: string) => void; editing: boolean; onMap: () => void;
   drawMode: "point" | "area" | null; onDrawMode: (m: "point" | "area") => void; onCheckArea: () => void; onCancel: (() => void) | null;
   detail: ReactNode;
@@ -61,6 +62,21 @@ export default function Assist(p: {
       </div>
       <button className="action big" onClick={p.onLocate}><Icon name="locate" size={28} />{L(UI.locate)}</button>
       <PlaceSearch lang={lang} bias={BANGLADESH} onPick={(q) => p.onPlace(q.ll)} />
+      {p.crossSites && p.crossSites.length > 0 && (
+        <div className="saved-places">
+          <div className="eyebrow mono">{lang === "bn" ? "সংরক্ষিত জায়গা" : "My saved places"}</div>
+          <ul>
+            {p.crossSites.map((s) => (
+              <li key={s.id}>
+                <button onClick={() => p.onChoose(s.region)}>
+                  <Icon name="locate" size={20} />
+                  <b>{s.name}</b>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="eyebrow mono">{L(UI.orPick)}</div>
       <ul className="regions">
         {p.list.map((r) => (
