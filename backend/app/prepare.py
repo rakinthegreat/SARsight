@@ -32,7 +32,8 @@ STAGES = [
     ("S1 ", "Downloading Sentinel-1 radar passes"),
     ("lband_hh", "Reading L-band, elevation and land cover"),
     ("water_occurrence", "Reading 38 years of water history"),
-    ("NISAR", "Checking NISAR passes"),
+    ("NISAR passes", "Checking NISAR passes"),
+    ("NISAR GCOV", "Reading NISAR L-band radar"),
     ("Building layers", "Building layers"),
     ("done in", "Building layers"),
 ]
@@ -142,6 +143,8 @@ def _run(rid: str):
         # Skip heavy multi-gigabyte NISAR HDF5 streaming unless explicitly enabled by SARSIGHT_CUSTOM_NISAR=1.
         if os.environ.get("SARSIGHT_CUSTOM_NISAR") != "1":
             env["SARSIGHT_SKIP_NISAR"] = "1"
+        else:  # latest NISAR scan only (~2 min); chaining motion pairs would take far longer than a user will wait
+            env.setdefault("SARSIGHT_NISAR_MOTION", "0")
         p = subprocess.Popen([sys.executable, "-u", str(ROOT / "scripts" / "fetch_real_data.py"), "--custom", str(d / "region.json")],
                              cwd=ROOT, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf8", errors="replace")
         for line in p.stdout:  # type: ignore[union-attr]

@@ -24,3 +24,6 @@ tsconfig.tsbuildinfo
 .DS_Store
 *.swp
 
+
+# Python bytecode
+__pycache__/

@@ -443,6 +443,8 @@ def fetch_nisar_science(r, bbox, cat, dates):
         print("    Earthdata login failed — check your credentials")
         return {}
     layers = {}
+    # small blocks, no background prefetch: we read a ~30 km window, so earthaccess's default 16 MB read-ahead mostly wastes bandwidth
+    open_kw = {"cache_type": "blockcache", "block_size": 2 * 1024 * 1024}
 
     def find(h5, name):
         # Direct lookup on standard NISAR HDF5 dataset paths first (avoids walking entire remote HDF5 tree)
@@ -499,7 +501,7 @@ def fetch_nisar_science(r, bbox, cat, dates):
         for g in granules[:2]:  # newest first; fall back if a pass only clips the region
             print(f"    NISAR {level}: streaming {g['id'][:60]}…")
             got = {}
-            fh = earthaccess.open([g["url"]])[0]
+            fh = earthaccess.open([g["url"]], show_progress=False, open_kwargs=open_kw)[0]
             try:
                 with h5py.File(fh, "r") as h5:
                     for name, lid in wanted.items():
@@ -522,6 +524,9 @@ def fetch_nisar_science(r, bbox, cat, dates):
                 break
             print("      coverage too low, trying the previous pass")
 
+    if os.environ.get("SARSIGHT_NISAR_MOTION") == "0":  # latest scan only: motion pairs are the slow part
+        return layers
+
     # ---- GUNW: chain consecutive pairs into a cumulative motion series
     level = "GUNW"  # noqa: F841  (read by find())
     chain = gunw_chain(bbox, dates[0], dates[-1])
@@ -530,7 +535,7 @@ def fetch_nisar_science(r, bbox, cat, dates):
         return layers
 
     def read_pair(g):
-        fh = earthaccess.open([g["url"]])[0]
+        fh = earthaccess.open([g["url"]], show_progress=False, open_kwargs=open_kw)[0]
         try:
             with h5py.File(fh, "r") as h5:
                 ph, cc = find(h5, "unwrappedPhase"), find(h5, "coherenceMagnitude")
@@ -545,9 +550,10 @@ def fetch_nisar_science(r, bbox, cat, dates):
         return disp, coh
 
     acq, cum, coh = [chain[0]["ref"]], [np.zeros((N, N), "f4")], [None]
-    for g in chain:
+    with ThreadPoolExecutor(4) as ex:  # network-bound: read several pairs at once
+        pairs = list(ex.map(read_pair, chain))
+    for g, (disp, c) in zip(chain, pairs):
         print(f"      {g['ref']} -> {g['sec']}")
-        disp, c = read_pair(g)
         if disp is None:
             break
         acq.append(g["sec"]); cum.append(cum[-1] + disp); coh.append(c)

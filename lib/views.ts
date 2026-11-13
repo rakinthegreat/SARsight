@@ -104,7 +104,9 @@ export function viewsFor(r: RegionData, module: "econ" | "haz" | "vis"): { obser
   if (has(r, "nisar_hh")) real.push("nisar");
   if (has(r, "nisar_disp")) real.push("nisardisp");
   if (has(r, "nisar_coh")) real.push("nisarcoh");
-  const insar = (v: ViewId) => (v === "coherence" || v === "damage" ? has(r, "coherence") : has(r, "deformation"));
+  // with no Sentinel-1 InSAR, NISAR motion is stored as deformation / coherence: list it with the other NISAR layers
+  if (r.manifest.layers.find((l) => l.id === "deformation")?.source === "asf") real.push(...preview.filter((v) => v === "deformation" || v === "coherence"));
+  const insar = (v: ViewId) => !real.includes(v) && (v === "coherence" || v === "damage" ? has(r, "coherence") : has(r, "deformation"));
   observed = [...real, ...observed, ...preview.filter(insar)];
   return { observed, preview: [] };
 }
