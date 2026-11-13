@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { Line, OrbitControls } from "@react-three/drei";
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import type { OrbitControls as OrbitImpl } from "three-stdlib";
 import { geoEquirectangular, geoGraticule10, geoPath } from "d3-geo";
@@ -281,7 +281,7 @@ function TileLayer({ on, labels = false }: { on: boolean; labels?: boolean }) {
 
 const HOME: LonLat = [88, 18];
 
-function CameraRig({ focus, controls }: { focus: { center: LonLat; span: number } | null; controls: React.RefObject<OrbitImpl | null> }) {
+function CameraRig({ focus, controls, zoomRef }: { focus: { center: LonLat; span: number } | null; controls: React.RefObject<OrbitImpl | null>; zoomRef: React.MutableRefObject<((dir: 1 | -1) => void) | null> }) {
   const { camera, gl } = useThree();
   const anim = useRef<{ from: THREE.Vector3; to: THREE.Vector3; t: number } | null>(null);
   const zoomTo = useRef<number | null>(null); // target altitude, eased in log space each frame
@@ -297,6 +297,15 @@ function CameraRig({ focus, controls }: { focus: { center: LonLat; span: number 
     host.addEventListener("wheel", onWheel, { capture: true, passive: false });
     return () => host.removeEventListener("wheel", onWheel, { capture: true });
   }, [gl, camera]);
+  // expose button-driven zoom so HTML buttons outside the canvas can trigger it
+  useEffect(() => {
+    zoomRef.current = (dir: 1 | -1) => {
+      const alt = camera.position.length() - 1;
+      zoomTo.current = Math.min(5, Math.max(0.00008, alt * Math.exp(dir * -300 * 0.0018)));
+      anim.current = null;
+    };
+    return () => { zoomRef.current = null; };
+  }, [camera, zoomRef]);
   const { size } = useThree();
   const aspect = size.height ? size.width / size.height : 1.5;
   useEffect(() => {
@@ -365,27 +374,35 @@ export default function Globe(props: {
   const selColor = isLight ? "#d97706" : "#ffb547";
   const unselColor = isLight ? "#475569" : "#e9e9e4";
   const controls = useRef<OrbitImpl | null>(null);
+  const zoomRef = useRef<((dir: 1 | -1) => void) | null>(null);
+  const zoom = useCallback((dir: 1 | -1) => { zoomRef.current?.(dir); }, []);
   const sel = props.catalog.find((r) => r.id === props.selected);
   const pinFocus = props.pin && !sel ? { center: props.pin, span: 8 } : null;
   const focus = useMemo(() => (sel ? { center: sel.center, span: sel.bbox[3] - sel.bbox[1] } : pinFocus),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [sel, props.pin?.[0], props.pin?.[1]]);
   return (
-    <Canvas dpr={[1, 1.75]} camera={{ fov: 40, near: 0.0005, far: 50, position: lonLatToVec3(HOME[0], HOME[1], 3.3).toArray() }} gl={{ antialias: true }}>
-      <color attach="background" args={[isLight ? "#f8f9fa" : "#050608"]} />
-      <Earth satellite={props.satellite} onSurface={props.onSurface} closeTo={props.drawing && props.draft.length >= 3 ? props.draft[0] : null} light={isLight} />
-      <TileLayer on={props.satellite} />
-      <TileLayer on={props.labels} labels />
-      {props.region && props.region.manifest.id === props.selected && <DataPatch region={props.region} view={props.view} t={props.t} opacity={props.opacity} />}
-      {props.catalog.map((r) => (
-        <Spot key={r.id} ll={r.center} color={r.id === props.selected ? selColor : unselColor} onClick={props.drawing ? undefined : () => props.onSelect(r.id)} />
-      ))}
-      {props.pin && <Spot ll={props.pin} color={selColor} ring={false} size={1.6} />}
-      {props.draft.map((p, i) => <Spot key={i} ll={p} color={selColor} ring={i === 0} size={0.6} />)}
-      <GlobePath pts={props.draft} closed={false} color={selColor} />
-      {props.polygon && <GlobePath pts={props.polygon} closed color={selColor} />}
-      <OrbitControls ref={controls} enablePan={false} minDistance={1.00008} maxDistance={6} enableDamping dampingFactor={0.08} />
-      <CameraRig focus={focus} controls={controls} />
-    </Canvas>
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      <Canvas dpr={[1, 1.75]} camera={{ fov: 40, near: 0.0005, far: 50, position: lonLatToVec3(HOME[0], HOME[1], 3.3).toArray() }} gl={{ antialias: true }}>
+        <color attach="background" args={[isLight ? "#f8f9fa" : "#050608"]} />
+        <Earth satellite={props.satellite} onSurface={props.onSurface} closeTo={props.drawing && props.draft.length >= 3 ? props.draft[0] : null} light={isLight} />
+        <TileLayer on={props.satellite} />
+        <TileLayer on={props.labels} labels />
+        {props.region && props.region.manifest.id === props.selected && <DataPatch region={props.region} view={props.view} t={props.t} opacity={props.opacity} />}
+        {props.catalog.map((r) => (
+          <Spot key={r.id} ll={r.center} color={r.id === props.selected ? selColor : unselColor} onClick={props.drawing ? undefined : () => props.onSelect(r.id)} />
+        ))}
+        {props.pin && <Spot ll={props.pin} color={selColor} ring={false} size={1.6} />}
+        {props.draft.map((p, i) => <Spot key={i} ll={p} color={selColor} ring={i === 0} size={0.6} />)}
+        <GlobePath pts={props.draft} closed={false} color={selColor} />
+        {props.polygon && <GlobePath pts={props.polygon} closed color={selColor} />}
+        <OrbitControls ref={controls} enablePan={false} minDistance={1.00008} maxDistance={6} enableDamping dampingFactor={0.08} />
+        <CameraRig focus={focus} controls={controls} zoomRef={zoomRef} />
+      </Canvas>
+      <div className="globe-zoom">
+        <button className="iconbtn" onClick={() => zoom(1)} aria-label="Zoom in">＋</button>
+        <button className="iconbtn" onClick={() => zoom(-1)} aria-label="Zoom out">－</button>
+      </div>
+    </div>
   );
 }

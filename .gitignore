@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# Next.js build output
+.next/
+.next-verify/
+
+# env secrets
+.env
+.env.local
+.env.*.local
+
+# real / custom satellite data (never commit)
+data/real/
+data/custom/
+
+# Python virtualenv
+.venv/
+
+# TypeScript incremental build
+tsconfig.tsbuildinfo
+
+# OS / editor
+.DS_Store
+*.swp

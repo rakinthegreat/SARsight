@@ -194,6 +194,8 @@ p { margin: 0; }
 .stage { position: relative; overflow: hidden; background: var(--bg); min-height: 0; }
 .globe-wrap { position: absolute; inset: 0; }
 .globe-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dim); }
+.globe-zoom { position: absolute; bottom: 32px; right: 16px; display: flex; flex-direction: column; gap: 4px; }
+.globe-zoom .iconbtn { width: 44px; height: 44px; font-size: 22px; background: var(--raised); border: 1px solid var(--line); border-radius: var(--r); display: grid; place-items: center; cursor: pointer; color: var(--fg); }
 .stage-hint { position: absolute; left: 28px; bottom: 26px; color: var(--dim); pointer-events: none; }
 
 .panel {
