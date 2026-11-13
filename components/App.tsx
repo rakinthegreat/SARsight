@@ -983,7 +983,54 @@ function NisarPasses({ region, passes, active, onPick, lang = "en" }: { region?:
   );
 }
 
+type SourceGroup = "nasa" | "partner" | "other";
+type SourceRow = Source & { key: string; group: SourceGroup; agency: string; use: [string, string] };
+
+/** Who provides each catalog source and what the app uses it for; NASA first, then partner agencies, then third parties. */
+const SOURCE_INFO: Record<string, Omit<SourceRow, keyof Source | "key">> = {
+  asf: { group: "nasa", agency: "NASA · ISRO", use: ["NISAR radar images, ground motion and satellite pass dates", "নিসার রাডার ছবি, মাটির নড়াচড়া ও স্যাটেলাইট আসার তারিখ"] },
+  power: { group: "nasa", agency: "NASA", use: ["Daily rain and temperature", "প্রতিদিনের বৃষ্টি ও তাপমাত্রা"] },
+  s1: { group: "partner", agency: "ESA", use: ["Radar images every 12 days: water, crops, change", "প্রতি ১২ দিনে রাডার ছবি: পানি, ফসল, পরিবর্তন"] },
+  dem: { group: "partner", agency: "ESA", use: ["Ground height", "জমির উচ্চতা"] },
+  worldcover: { group: "partner", agency: "ESA", use: ["Land type: crops, trees, buildings, water", "জমির ধরন: ফসল, গাছ, ঘরবাড়ি, পানি"] },
+  palsar: { group: "partner", agency: "JAXA", use: ["L-band radar picture (2021)", "এল-ব্যান্ড রাডার ছবি (২০২১)"] },
+  licsar: { group: "other", agency: "COMET · Leeds", use: ["Ground motion measured from Sentinel-1", "সেন্টিনেল-১ থেকে মাপা মাটির নড়াচড়া"] },
+  gsw: { group: "other", agency: "EC JRC", use: ["How often each place has water (1984–2021)", "কোন জায়গায় কত ঘন ঘন পানি থাকে (১৯৮৪–২০২১)"] },
+  usgs: { group: "other", agency: "USGS", use: ["Earthquakes", "ভূমিকম্প"] },
+};
+
+/** Sources the browser calls directly, which are not in the data catalog. */
+const LIVE_SOURCES: SourceRow[] = [
+  { key: "eonet", group: "nasa", agency: "NASA", name: "NASA EONET (Earth Observatory Natural Event Tracker)", by: "NASA Goddard Space Flight Center", license: "Public domain", url: "https://eonet.gsfc.nasa.gov",
+    use: ["Live natural events near your place", "আপনার এলাকার কাছে চলমান প্রাকৃতিক দুর্যোগ"] },
+  { key: "esri", group: "other", agency: "Esri", name: "Esri World Imagery", by: "Esri, Maxar, Earthstar Geographics", license: "Esri terms · attribution required", url: "https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9",
+    use: ["Background satellite photo", "পেছনের স্যাটেলাইট ছবি"] },
+  { key: "osm", group: "other", agency: "OpenStreetMap", name: "OpenStreetMap (Nominatim, Overpass)", by: "OpenStreetMap contributors", license: "ODbL", url: "https://www.openstreetmap.org/copyright",
+    use: ["Place names and place search", "জায়গার নাম ও খোঁজা"] },
+  { key: "natural-earth", group: "other", agency: "Natural Earth", name: "Natural Earth / world-atlas", by: "Natural Earth", license: "Public domain", url: "https://www.naturalearthdata.com",
+    use: ["Coastlines and borders", "উপকূল ও সীমানা"] },
+];
+
+const SOURCE_GROUPS: { id: SourceGroup; title: [string, string]; note: [string, string]; tag: [string, string] }[] = [
+  { id: "nasa", title: ["NASA data", "নাসার উপাত্ত"], tag: ["NASA", "নাসা"],
+    note: ["Data from NASA missions and NASA archives.", "নাসার মিশন ও নাসার সংরক্ষণাগারের উপাত্ত।"] },
+  { id: "partner", title: ["Space agency partner data", "সহযোগী মহাকাশ সংস্থার উপাত্ত"], tag: ["Partner", "সহযোগী"],
+    note: ["From NASA Space Apps partner agencies: ESA (Europe) and JAXA (Japan).", "নাসা স্পেস অ্যাপসের সহযোগী সংস্থা থেকে: ইএসএ (ইউরোপ) ও জাক্সা (জাপান)।"] },
+  { id: "other", title: ["Third-party data", "অন্যান্য উৎসের উপাত্ত"], tag: ["Third party", "অন্যান্য"],
+    note: ["Universities, other agencies and open maps.", "বিশ্ববিদ্যালয়, অন্য সংস্থা ও উন্মুক্ত মানচিত্র।"] },
+];
+
+function sourceRows(sources: Record<string, Source>): SourceRow[] {
+  const rows = Object.entries(sources).map(([key, s]): SourceRow => {
+    const info = SOURCE_INFO[key] ?? { group: /\bNASA\b/.test(s.name + s.by) ? "nasa" : "other", agency: s.by.split(" · ")[0], use: ["", ""] as [string, string] };
+    return { ...s, key, ...info };
+  });
+  const order = [...Object.keys(SOURCE_INFO), ...LIVE_SOURCES.map((l) => l.key)], rank = (k: string) => (order.indexOf(k) + 1 || order.length + 1);
+  return [...rows, ...LIVE_SOURCES.filter((l) => !sources[l.key])].sort((x, y) => rank(x.key) - rank(y.key));
+}
+
 function SourcesSheet({ sources, onClose, lang = "en" }: { sources: Record<string, Source>; onClose: () => void; lang?: "en" | "bn" }) {
+  const rows = sourceRows(sources);
   return (
     <div className="sheet-bg" onClick={onClose}>
       <div className="sheet" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={lang === "bn" ? "উপাত্তের উৎসসমূহ" : "Data sources"}>
@@ -996,25 +1043,30 @@ function SourcesSheet({ sources, onClose, lang = "en" }: { sources: Record<strin
             ? <>প্রতিটি লেয়ার বাস্তব স্যাটেলাইট পরিমাপ, যা প্রতিটি অঞ্চলের গ্রিডে প্রক্রিয়াজাত করা হয়েছে। কিছুই সিমুলেটেড নয়। মাটির গতিবিধি আসে বাস্তব ইন্টারফেরোগ্রাম থেকে (নিসার GUNW অথবা সেন্টিনেল-১ LiCSAR); যেখানে তা নেই, সেখানে গতিবিধির লেয়ার দেখানো হয় না।</>
             : <>Every layer is a real satellite measurement, processed onto each region&apos;s grid. Nothing is simulated. Ground motion comes from real interferograms (NISAR GUNW or Sentinel-1 LiCSAR); where none exist, motion layers are not shown.</>}
         </p>
-        <ul className="sources">
-          {Object.entries(sources).map(([k, s]) => (
-            <li key={k} className={k === "nisar-preview" ? "pv" : ""}>
-              <b>{s.name}</b>
-              <span>{s.by}</span>
-              <span className="mono dim">{s.license} · <a href={s.url} target="_blank" rel="noreferrer">{s.url.replace(/^https?:\/\//, "")}</a></span>
-            </li>
+        <div className="src-summary">
+          {SOURCE_GROUPS.map((g) => (
+            <span key={g.id} className={`stag ${g.id}`}>{tr(g.tag, lang)} · {num(String(rows.filter((r) => r.group === g.id).length), lang)}</span>
           ))}
-          <li>
-            <b>{lang === "bn" ? "এসরি ওয়ার্ল্ড ইমেজারি (Esri)" : "Esri World Imagery"}</b>
-            <span>{lang === "bn" ? "বেসম্যাপ · এসরি, মাক্সার, আর্থস্টার জিওগ্রাফিক্স" : "Basemap · Esri, Maxar, Earthstar Geographics"}</span>
-            <span className="mono dim">{lang === "bn" ? "স্বীকৃতি আবশ্যক" : "Attribution required"}</span>
-          </li>
-          <li>
-            <b>{lang === "bn" ? "ন্যাচারাল আর্থ / world-atlas" : "Natural Earth / world-atlas"}</b>
-            <span>{lang === "bn" ? "উপকূলরেখা ও সীমানা" : "Coastlines and borders"}</span>
-            <span className="mono dim">{lang === "bn" ? "পাবলিক ডোমেন" : "Public domain"}</span>
-          </li>
-        </ul>
+        </div>
+        {SOURCE_GROUPS.map((g) => {
+          const list = rows.filter((r) => r.group === g.id);
+          return list.length > 0 && (
+            <section key={g.id} className="src-group">
+              <h3>{tr(g.title, lang)}</h3>
+              <p className="dim small">{tr(g.note, lang)}</p>
+              <ul className="sources">
+                {list.map((s) => (
+                  <li key={s.key} className={s.key === "nisar-preview" ? "pv" : ""}>
+                    <span className="src-name"><b>{s.name}</b><span className={`stag ${g.id}`}>{s.agency.startsWith(g.tag[0]) ? tr(g.tag, lang) + s.agency.slice(g.tag[0].length) : g.id === "other" ? s.agency : `${tr(g.tag, lang)} · ${s.agency}`}</span></span>
+                    {s.use[0] && <span>{tr(s.use, lang)}</span>}
+                    <span className="dim small">{s.by}</span>
+                    <span className="mono dim">{s.license} · <a href={s.url} target="_blank" rel="noreferrer">{s.url.replace(/^https?:\/\//, "").split("/")[0]}</a></span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          );
+        })}
       </div>
     </div>
   );

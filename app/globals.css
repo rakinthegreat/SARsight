@@ -423,6 +423,13 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 .sources li { display: grid; gap: 3px; padding: 14px 0; border-top: 1px solid var(--line); }
 .sources li.pv b { color: var(--accent); }
 .sources a { color: var(--text); }
+.src-summary { display: flex; flex-wrap: wrap; gap: 8px; }
+.src-group { display: grid; gap: 6px; }
+.src-group h3 { margin: 8px 0 0; font-size: 20px; }
+.src-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.stag { display: inline-block; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--dim); font: 11px var(--font-mono); text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; }
+.stag.nasa { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+.stag.partner { border-color: var(--text); color: var(--text); }
 
 /* ---------- mobile ---------- */
 @media (max-width: 900px) {
