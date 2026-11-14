@@ -36,14 +36,15 @@ uvicorn app.main:app --reload --port 8000           # interactive docs at http:/
 4. **`scripts/nisar_to_sarsight.py`** (repo root) resamples the COGs into the static grids the frontend reads.
 
 
-## Going live
+## NISAR data
 
-When the NASA data arrives:
-1. Verify the HDF5 dataset paths with `h5py.File(f).visit(print)`, and update `convert.DATASETS` and `sim/products.STRUCTURE` if they differ.
+NISAR science data is live and already in the showcase places. `scripts/add_nisar.py` (see the root README) streams the
+latest GCOV scan, plus chained GUNW motion for Mexico City and Campi Flegrei, straight into `public/data`.
+
+For a NISAR download you already have on disk, the manual path still works:
+1. Check the HDF5 dataset paths with `h5py.File(f).visit(print)`, and update `convert.DATASETS` if they differ.
 2. Run `convert.h5_to_cogs()` (or the GDAL commands) for each granule.
 3. Run `scripts/nisar_to_sarsight.py` for each region.
-
-The frontend and the AOI endpoint then use the real data.
 
 If the package is OPERA or ARIA data from Sentinel-1 rather than NISAR, these products map to SARsight layers:
 
@@ -57,8 +58,9 @@ If the package is OPERA or ARIA data from Sentinel-1 rather than NISAR, these pr
 
 When someone draws or taps outside the 10 showcase regions, the app offers **Prepare this place** and calls `POST /api/areas`.
 
-- **How a job runs:** the backend writes `data/custom/<id>/region.json`, then runs `scripts/fetch_real_data.py --custom` and `node scripts/build-data.mjs --custom <id>` in a background queue, one job at a time.
+- **How a job runs:** the backend writes `data/custom/<id>/region.json`, then runs `scripts/fetch_real_data.py --custom` (without NISAR) and `node scripts/build-data.mjs --custom <id>` in a background queue, one job at a time. The area is marked done and opens as soon as this finishes, in about a minute.
 - **Size of an area:** at least 0.06° (about 70 m cells) and at most 1°. Dates default to the last 150 days.
 - **Where results go:** `data/custom/`, which is gitignored.
-- **NISAR science layers** are added automatically when Earthdata credentials are present. Set `SARSIGHT_SKIP_NISAR=1` to skip them.
+- **NISAR science layers** are a second step, off by default. With `SARSIGHT_CUSTOM_NISAR=1` and Earthdata credentials, a background thread runs `scripts/add_nisar.py --dir data/custom/<id>/site` (latest GCOV scan only, about 1.5 minutes) after the area is ready. `GET /api/areas/{id}` reports it as `nisar: {state, stage, pct}`; a failure only skips NISAR and never breaks the area.
+- **Server:** see `deploy/server/README.md` for running this API with Docker and HTTPS.
 - **Frontend address:** the frontend finds the backend through `NEXT_PUBLIC_API` (default `http://localhost:8000`).

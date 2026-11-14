@@ -9,16 +9,17 @@ Also refreshes the NISAR pass catalogue. Needs EARTHDATA_USERNAME / EARTHDATA_PA
 Motion pairs are slow (one 2.3 GB file per 12 days), so they are only read for MOTION regions, where ground motion
 is the story; every other region gets the latest scan only.
 
-Usage (from repo root):  backend/.venv/bin/python scripts/add_nisar.py [region-id ...]
+Usage (from repo root):  backend/.venv/bin/python scripts/add_nisar.py [region-id ...]      (Windows: backend/.venv/Scripts/python)
                          backend/.venv/bin/python scripts/add_nisar.py --dir data/custom/<id>/site   (on-demand area)
 """
 from __future__ import annotations
 
-import fcntl
 import json
 import os
 import sys
+import tempfile
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
@@ -61,11 +62,34 @@ def add(rid: str, d: Path | None = None) -> dict:
     return {"passes": len(m.get("nisar", [])), "layers": sorted(science), "data": any(L["source"] == "asf" for L in m["layers"])}
 
 
+@contextmanager
+def _locked(path: Path):
+    """Exclusive lock on `path` that works on Linux, macOS and Windows."""
+    with open(path, "a+b") as f:
+        if os.name == "nt":
+            import msvcrt
+            f.seek(0)
+            while True:
+                try:
+                    msvcrt.locking(f.fileno(), msvcrt.LK_LOCK, 1)
+                    break
+                except OSError:
+                    time.sleep(0.2)
+            try:
+                yield
+            finally:
+                f.seek(0)
+                msvcrt.locking(f.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(f, fcntl.LOCK_EX)
+            yield
+
+
 def save_catalog(rid: str, passes: int, has_data: bool):
     """Several copies of this script may run at once (one per region): update the shared catalog under a file lock."""
     path = DATA / "catalog.json"
-    with open(path, "a") as lock:  # lock the catalog itself; "a" does not truncate it
-        fcntl.flock(lock, fcntl.LOCK_EX)
+    with _locked(Path(tempfile.gettempdir()) / "sarsight-catalog.lock"):  # a separate lock file: Windows locks block other writers
         cat = json.loads(path.read_text(encoding="utf8"))
         for entry in cat["regions"]:
             if entry["id"] == rid:

@@ -61,17 +61,18 @@ npm run data:build                                         # → public/data/
 
 **Real NISAR science data:**
 1. Create a free account at https://urs.earthdata.nasa.gov.
-2. Set the credentials in your own shell. Never commit them:
+2. Copy `.env.example` to `.env` in the repo root and fill in `EARTHDATA_USERNAME` and `EARTHDATA_PASSWORD`
+   (or export them in your shell). `.env` is gitignored: never commit it.
+3. Add NISAR to the ready places without refetching anything else:
    ```bash
-   export EARTHDATA_USERNAME=...
-   export EARTHDATA_PASSWORD=...
+   backend/.venv/Scripts/python scripts/add_nisar.py            # every region (macOS/Linux: backend/.venv/bin/python)
+   backend/.venv/Scripts/python scripts/add_nisar.py dhaka      # or just some
    ```
-3. Install the extra libraries and re-run the fetch:
-   ```bash
-   pip install earthaccess h5py
-   ```
+   This writes the latest NISAR GCOV scan (HH/HV) straight into `public/data/<id>/` and updates `catalog.json`.
+   Mexico City and Campi Flegrei also get NISAR ground motion (GUNW pairs chained over time); that part is slow,
+   about one 2.3 GB file per 12 days. No `npm run data:build` is needed afterwards.
 
-The latest NISAR GCOV (HH/HV) and GUNW (motion, coherence) for each region are then added as observed layers.
+A full `scripts/fetch_real_data.py` run with the login set also adds NISAR, but refetches every other layer too.
 
 Regions and dates are defined in `data/regions.json`. See [DATA.md](DATA.md) for the file format and [backend/README.md](backend/README.md) for the API.
 
@@ -85,4 +86,22 @@ cd backend
 uvicorn app.main:app --port 8000
 ```
 
-Then draw or tap anywhere in the app and choose **Prepare this place**. In about a minute the backend builds a new area from real Sentinel-1, elevation, land cover and water-history data. The app remembers the area and adds it to your places.
+Then draw or tap anywhere in the app and choose **Prepare this place**. In about a minute the backend builds a new area from real Sentinel-1, elevation, land cover and water-history data. The app remembers the area and adds it to your places. With `SARSIGHT_CUSTOM_NISAR=1` and an Earthdata login, the latest NISAR scan is added a minute or two later, while the place is already open.
+
+## Deploying
+
+- **Frontend (Vercel):** set the variables in [`deploy/vercel.env`](deploy/vercel.env) under Project → Settings → Environment Variables, then redeploy.
+- **Backend (any Linux server):** Docker + Caddy with automatic HTTPS. See [`deploy/server/README.md`](deploy/server/README.md).
+  The image clones `main` from GitHub at build time, so rebuild it to pick up new commits.
+
+## Settings
+
+| Variable | Where | What it does |
+|---|---|---|
+| `EARTHDATA_USERNAME`, `EARTHDATA_PASSWORD` | `.env` or shell; `deploy/server/backend.env` on the server | Earthdata login for NISAR science layers. Secret. |
+| `SARSIGHT_SKIP_NISAR=1` | data scripts | Skip NISAR entirely (credential-free runs, CI) |
+| `SARSIGHT_CUSTOM_NISAR=1` | backend | Add NISAR to on-demand places (off by default) |
+| `SARSIGHT_NISAR_MOTION=0/1` | `fetch_real_data.py` | Fetch NISAR ground motion; `add_nisar.py` sets it per region |
+| `SARSIGHT_DATA` | backend | Data folder the API reads (default `public/data`) |
+| `NEXT_PUBLIC_API` | frontend build | Backend address (default `http://localhost:8000`) |
+| `NEXT_PUBLIC_DATA_BASE` | frontend build | Where the app loads region data (default `/data`) |

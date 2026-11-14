@@ -7,7 +7,7 @@ requests>=2.31
 pystac-client>=0.8
 planetary-computer>=1.0
 rasterio>=1.3
-# Real-data path (optional; the service runs in simulation mode without these)
+# NISAR science layers (optional; without them the app uses Sentinel-1, ALOS-2 and the other free sources)
 h5py>=3.10          # read NISAR HDF5 (GUNW / GCOV)
 earthaccess>=0.9    # NISAR science streaming (needs your Earthdata login in ~/.netrc or env vars)
 edge-tts>=7.0.0     # Neural text-to-speech for plain-language voice advice (EN / BN)
