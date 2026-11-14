@@ -493,7 +493,7 @@ function AppContent() {
           <button className="pill" onClick={() => setOnboard(true)} aria-label={tr(ONBOARD.replay, lang)} title={tr(ONBOARD.replay, lang)}><span className="pill-icon">?</span><span className="pill-text">{tr(ONBOARD.replay, lang)}</span></button>
           <button className="pill mono" onClick={() => setShowSources(true)} aria-label={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"} title={lang === "bn" ? "উপাত্তের উৎস" : "Data sources"}><span className="pill-icon">i</span><span className="pill-text">{lang === "bn" ? "উপাত্তের উৎস" : "DATA SOURCES"}</span></button>
           </div>
-          <button className="pill mobile-only more-btn" onClick={() => setMoreOpen(!moreOpen)} aria-expanded={moreOpen} aria-label={tr(UI.menu, lang)}><span className="pill-icon">⋯</span></button>
+          <button className="pill mobile-only more-btn" onClick={() => setMoreOpen(!moreOpen)} aria-expanded={moreOpen} aria-label={tr(UI.menu, lang)}><span className="pill-icon"><Icon name="more" size={18} /></span></button>
           {moreOpen && (<>
             <div className="top-menu-bg" onClick={() => setMoreOpen(false)} />
             <div className="top-menu mobile-only" role="menu">

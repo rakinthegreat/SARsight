@@ -789,7 +789,7 @@ button.pill:hover { color: var(--text); border-color: var(--dim); }
 .pill-icon { display: none; }
 @media (max-width: 600px) {
   .top-right { gap: 6px; }
-  .top-right .pill:not(.lang) { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; border-radius: 50%; }
+  .top-right .pill:not(.lang) { width: 44px; height: 44px; padding: 0; display: grid; place-items: center; justify-content: center; align-items: center; border-radius: 50%; }
   .top-right .pill.lang { min-height: 44px; }
   .top-extra { display: none; }
   .top-right .pill .pill-text { display: none; }

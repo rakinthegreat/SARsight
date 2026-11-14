@@ -22,6 +22,7 @@ const P: Record<string, string> = {
   stop: "M6 6h12v12H6z",
   pen: "M4 20l4-1L19 8l-3-3L5 16l-1 4zM14 7l3 3",
   close: "M6 6l12 12M18 6L6 18",
+  more: "M5 10.2a1.8 1.8 0 1 0 0 3.6a1.8 1.8 0 1 0 0-3.6zM12 10.2a1.8 1.8 0 1 0 0 3.6a1.8 1.8 0 1 0 0-3.6zM19 10.2a1.8 1.8 0 1 0 0 3.6a1.8 1.8 0 1 0 0-3.6z",
   back: "M15 5l-7 7 7 7",
   undo: "M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3",
   layers: "M12 3l9 5-9 5-9-5 9-5zm-9 9l9 5 9-5M3 16l9 5 9-5",
@@ -40,7 +41,7 @@ const P: Record<string, string> = {
 export type IconName = keyof typeof P;
 
 export default function Icon({ name, size = 22, className }: { name: string; size?: number; className?: string }) {
-  const fill = name === "play" || name === "pause" || name === "stop";
+  const fill = name === "play" || name === "pause" || name === "stop" || name === "more";
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden
       fill={fill ? "currentColor" : "none"} stroke={fill ? "none" : "currentColor"} strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
