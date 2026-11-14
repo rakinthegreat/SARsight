@@ -35,6 +35,18 @@ This project is to be built for the NASA Space Apps Challenge 2026.
 - Bikram Roy Utsa
 - Md Rakinuzzaman Talukder
 - Raisa Jaman
+
+## Use of AI (Super Intelligence)
+
+We used one AI tool, Anthropic's Claude (through Claude Code), to build SARsight faster. The team chose the idea, the design and every data source, and directed, reviewed and tested the AI's work.
+
+- **Code:** some parts of the code were written with Claude, under the team's direction and review.
+- **Documentation:** parts of this README and `DATA.md` were drafted with Claude.
+- **Audio:** the app's read-aloud voice uses Microsoft Edge neural text-to-speech, which is AI-generated speech.
+- **Data: no AI.** Every map layer is a real satellite measurement (NISAR, Sentinel-1, NASA POWER and others). AI was used only to write code that downloads and processes this data. No data was generated, modelled or simulated by AI.
+
+See [AI_USE.md](AI_USE.md) for the details.
+
 ## Running it
 
 ```bash
