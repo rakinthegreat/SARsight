@@ -2,15 +2,15 @@
 
 # SARsight
 
-**NASA's NISAR radar data, turned into plain answers for farmers, families and scientists.**
+**NASA's NISAR data, turned into plain answers for farmers, families and scientists.**
 
 <a href="https://sarsight.vercel.app"><img src="docs/open-app.svg" alt="Open the live app at sarsight.vercel.app" height="64"></a>
 
 [EconAssist](https://sarsight.vercel.app/#econ) · [HazAssist](https://sarsight.vercel.app/#haz) · [VisAssist](https://sarsight.vercel.app/#vis/sylhet-haor) · no sign-up, works on any phone
 
-<a href="https://sarsight.vercel.app/#vis/sylhet-haor"><img src="docs/sarsight-hero.jpg" alt="SARsight VisAssist showing the June 2022 Sylhet flood: 30% of the area under water, 288 km² of normally-dry land flooded, from Sentinel-1 radar" width="100%"></a>
+<a href="https://sarsight.vercel.app/#vis/mexico-city"><img src="docs/sarsight-hero.jpg" alt="SARsight VisAssist over Mexico City with the NISAR ground-motion layer: the red zone is sinking ground, and the panel reads sinking speed 26 cm per year, unsafe" width="100%"></a>
 
-<sub>The June 2022 Sylhet flood, seen through cloud by Sentinel-1 radar. Click the image to open it live.</sub>
+<sub>Mexico City, one of the fastest-sinking cities on Earth. The red zone is ground sinking, measured by NISAR's L-band radar. Click the image to open it live.</sub>
 
 </div>
 
