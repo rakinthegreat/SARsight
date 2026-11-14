@@ -48,9 +48,9 @@ Every region uses **real satellite observations only — nothing is simulated**,
 | **NISAR ground motion series, L-band images** (with an Earthdata login) | NISAR GUNW pairs chained into cumulative motion; latest GCOV HH/HV |
 
 Ground-motion layers appear only where real interferograms exist. Each region's window is chosen so the motion
-covers the whole timeline: Kahramanmaraş spans the 2023 earthquake, Campi Flegrei and Mexico City run to autumn 2026,
-and the farm and coast regions end at the latest pass. Regions without an InSAR archive get motion from NISAR once
-you run the fetch with your Earthdata login.
+covers the whole timeline: Kahramanmaraş spans the 2023 earthquake, Campi Flegrei and Mexico City run to June 2026
+(the latest COMET LiCSAR interferograms), and the farm and coast regions end at the latest pass. Mexico City and
+Campi Flegrei also carry NISAR ground motion; the farm, coast and flood regions have no ground-motion layer.
 
 Refresh the data (no credentials needed, about 1 minute per region):
 
