@@ -1,4 +1,20 @@
+<div align="center">
+
 # SARsight
+
+**NASA's NISAR radar data, turned into plain answers for farmers, families and scientists.**
+
+<a href="https://sarsight.vercel.app"><img src="docs/open-app.svg" alt="Open the live app at sarsight.vercel.app" height="64"></a>
+
+[EconAssist](https://sarsight.vercel.app/#econ) · [HazAssist](https://sarsight.vercel.app/#haz) · [VisAssist](https://sarsight.vercel.app/#vis/sylhet-haor) · no sign-up, works on any phone
+
+<a href="https://sarsight.vercel.app/#vis/sylhet-haor"><img src="docs/sarsight-hero.jpg" alt="SARsight VisAssist showing the June 2022 Sylhet flood: 30% of the area under water, 288 km² of normally-dry land flooded, from Sentinel-1 radar" width="100%"></a>
+
+<sub>The June 2022 Sylhet flood, seen through cloud by Sentinel-1 radar. Click the image to open it live.</sub>
+
+</div>
+
+---
 
 SARsight is a 4D geospatial platform that democratizes NASA-ISRO SAR (NISAR) data by transforming complex microwave signals into actionable insights. It features a multi-interface architecture containing three specialized modules: 
 

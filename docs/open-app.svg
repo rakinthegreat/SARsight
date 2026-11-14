@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="64" viewBox="0 0 440 64" role="img" aria-label="Open the live app: sarsight.vercel.app">
+  <rect width="440" height="64" rx="32" fill="#ffb547"/>
+  <circle cx="34" cy="32" r="18" fill="#0b1220"/>
+  <path d="M29 23.5v17l13.5-8.5z" fill="#ffb547"/>
+  <text x="64" y="27" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" letter-spacing="1.5" fill="#0b1220">OPEN THE LIVE APP</text>
+  <text x="64" y="49" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="21" font-weight="800" fill="#0b1220">sarsight.vercel.app</text>
+  <path d="M396 24l8 8-8 8" stroke="#0b1220" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
